@@ -8,8 +8,8 @@ C = gcc
 C_FLAGS = -Wall -Werror -pedantic -ggdb -O0
 PROGRAM = asciigol
 
-$(PROGRAM): $(PROGRAM).c
-	$(C) $(C_FLAGS) $< -o $@
+$(PROGRAM): main.c $(PROGRAM).c
+	$(C) $(C_FLAGS) $^ -o $@
 
 run: $(PROGRAM)
 	./$(PROGRAM)
