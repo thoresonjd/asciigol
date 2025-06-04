@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 struct AsciigolArgs {
+	char character;
 	bool wrapAround;
 };
 

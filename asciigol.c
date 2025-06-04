@@ -17,7 +17,7 @@ static const int GRID_WIDTH = 100;
 static const int GRID_HEIGHT = 40;
 static const int SLEEP_TIME_MILLIS = 50;
 static const int MICROS_PER_MILLI = 1000;
-static const char LIVE_CELL_CHAR = '#';
+static const char DEFAULT_LIVE_CELL_CHAR = '#';
 static const char DEAD_CELL_CHAR = ' ';
 
 static void clearScreen() {
@@ -101,10 +101,10 @@ static void computeCells(char** cells, int width, int height, bool wrap) {
 	*cells = newCells;
 }
 
-static void renderCells(char** cells, int width, int height) {
+static void renderCells(char** cells, int width, int height, char character) {
 	int size = width * height;
 	for (int i = 0; i < size; i++) {
-		putchar((*cells)[i] ? LIVE_CELL_CHAR : DEAD_CELL_CHAR);
+		putchar((*cells)[i] ? character ? character : DEFAULT_LIVE_CELL_CHAR : DEAD_CELL_CHAR);
 		if (i % width == width - 1)
 			putchar('\n');
 	}
@@ -117,7 +117,7 @@ void asciigol(const struct AsciigolArgs* const args) {
 	while (true) { // TODO: end game if/when cells converge and don't change
 		resetCursor();
 		computeCells(&cells, GRID_WIDTH, GRID_HEIGHT, args->wrapAround);
-		renderCells(&cells, GRID_WIDTH, GRID_HEIGHT);
+		renderCells(&cells, GRID_WIDTH, GRID_HEIGHT, args->character);
 		wait();
 	}
 }
