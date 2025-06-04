@@ -12,10 +12,13 @@
 #include <stdbool.h>
 
 struct AsciigolArgs {
+	unsigned int width;
+	unsigned int height;
 	char character;
 	bool wrapAround;
 };
 
-void asciigol(const struct AsciigolArgs* const args);
+void asciigol(struct AsciigolArgs args);
 
 #endif // ASCIIGOL_H
+

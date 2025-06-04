@@ -13,8 +13,8 @@
 
 // TODO: dimensions (and maybe sleep time?) should be dynamic at some point,
 //		 hence the use of malloc bellow; for now, fixed values will suffice
-static const int GRID_WIDTH = 100;
-static const int GRID_HEIGHT = 40;
+static const unsigned int DEFAULT_WIDTH = 100;
+static const unsigned int DEFAULT_HEIGHT = 40;
 static const int SLEEP_TIME_MILLIS = 50;
 static const int MICROS_PER_MILLI = 1000;
 static const char DEFAULT_LIVE_CELL_CHAR = '#';
@@ -32,8 +32,12 @@ static void wait() {
 	usleep(SLEEP_TIME_MILLIS * MICROS_PER_MILLI);
 }
 
-static void initCells(char** cells, int width, int height) {
-	int size = width * height;
+static void initCells(char** cells, unsigned int* const width, unsigned int* const height) {
+	if (!*width)
+		*width = DEFAULT_WIDTH;
+	if (!*height)
+		*height = DEFAULT_HEIGHT;
+	int size = *width * *height;
 	*cells = (char*)malloc(size);
 	// TODO: random initial state; allow fixed configurations as well
 	srand(time(NULL));
@@ -47,7 +51,7 @@ static void destroyCells(char** cells) {
 
 static char computeCell(char** cells, int row, int col, int width, int height, bool wrap) {
 	char cell = (*cells)[width * row + col];
-	// get neighbor range; will go out of range when wrap is enabled
+	// get neighbor range; will go out of grid range when wrap is enabled
 	int rowBegin = row || wrap ? row - 1 : row;
 	int colBegin = col || wrap ? col - 1 : col;
 	int rowEnd = row < height - 1 || wrap ? row + 1 : row;
@@ -110,14 +114,14 @@ static void renderCells(char** cells, int width, int height, char character) {
 	}
 }
 
-void asciigol(const struct AsciigolArgs* const args) {
+void asciigol(struct AsciigolArgs args) {
 	char* cells = NULL;
-	initCells(&cells, GRID_WIDTH, GRID_HEIGHT);
+	initCells(&cells, &args.width, &args.height);
 	clearScreen();
 	while (true) { // TODO: end game if/when cells converge and don't change
 		resetCursor();
-		computeCells(&cells, GRID_WIDTH, GRID_HEIGHT, args->wrapAround);
-		renderCells(&cells, GRID_WIDTH, GRID_HEIGHT, args->character);
+		computeCells(&cells, args.width, args.height, args.wrapAround);
+		renderCells(&cells, args.width, args.height, args.character);
 		wait();
 	}
 }
