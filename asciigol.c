@@ -45,41 +45,57 @@ static void destroyCells(char** cells) {
 	free(*cells);
 }
 
-static char computeCell(char** cells, int row, int col, int width, int height) {
+static char computeCell(char** cells, int row, int col, int width, int height, bool wrap) {
 	char cell = (*cells)[width * row + col];
-	int rowBegin = row ? row - 1 : row;
-	int colBegin = col ? col - 1 : col;
-	int rowEnd = row < height - 1 ? row + 1 : row;
-	int colEnd = col < width - 1 ? col + 1 : col;
-	int numNeighbors = 0;
-	for (int i = rowBegin; i <= rowEnd; i++) {
-		for (int j = colBegin; j <= colEnd; j++) {
-			if (i == row && j == col)
-				continue;
-			int neighbor = (*cells)[width * i + j];
-			if (neighbor)
-				numNeighbors++;
+	// get neighbor range; will go out of range when wrap is enabled
+	int rowBegin = row || wrap ? row - 1 : row;
+	int colBegin = col || wrap ? col - 1 : col;
+	int rowEnd = row < height - 1 || wrap ? row + 1 : row;
+	int colEnd = col < width - 1 || wrap ? col + 1 : col;
+	int numLiveNeighbors = 0;
+	for (int r = rowBegin; r <= rowEnd; r++) {
+
+		// account for wrap around
+		int neighborRow = r;
+		if (neighborRow == -1)
+			neighborRow = height - 1;
+		else if (neighborRow == height)
+			neighborRow = 0;
+
+		for (int c = colBegin; c <= colEnd; c++) {
+
+			// account for wrap around
+			int neighborCol = c;
+			if (neighborCol == -1)
+				neighborCol = width - 1;
+			else if (neighborCol == width)
+				neighborCol = 0;
+
+			// count neighbor if live
+			int neighbor = (*cells)[width * neighborRow + neighborCol];
+			if (neighbor && (neighborRow != row || neighborCol != col))
+				numLiveNeighbors++;
 		}
 	}
 	// GOL rules
-	if (cell && numNeighbors < 2)
+	if (cell && numLiveNeighbors < 2)
 		return 0;
-	if (cell && (numNeighbors == 2 || numNeighbors == 3))
+	if (cell && (numLiveNeighbors == 2 || numLiveNeighbors == 3))
 		return 1;
-	if (cell && numNeighbors > 3)
+	if (cell && numLiveNeighbors > 3)
 		return 0;
-	if (!cell && numNeighbors == 3)
+	if (!cell && numLiveNeighbors == 3)
 		return 1;
 	return 0;
 }
 
-static void computeCells(char** cells, int width, int height) {
+static void computeCells(char** cells, int width, int height, bool wrap) {
 	int size = width * height;
 	char* newCells = (char*)malloc(size);
 	for (int i = 0; i < size; i++) {
 		int row = i / width;
 		int col = i % width;
-		newCells[i] = computeCell(cells, row, col, width, height);
+		newCells[i] = computeCell(cells, row, col, width, height, wrap);
 	}
 	destroyCells(cells);
 	*cells = newCells;
@@ -88,20 +104,19 @@ static void computeCells(char** cells, int width, int height) {
 static void renderCells(char** cells, int width, int height) {
 	int size = width * height;
 	for (int i = 0; i < size; i++) {
-		char character = (*cells)[i] ? LIVE_CELL_CHAR : DEAD_CELL_CHAR;
-		putchar(character);
+		putchar((*cells)[i] ? LIVE_CELL_CHAR : DEAD_CELL_CHAR);
 		if (i % width == width - 1)
 			putchar('\n');
 	}
 }
 
-void asciigol() {
+void asciigol(const struct AsciigolArgs* const args) {
 	char* cells = NULL;
 	initCells(&cells, GRID_WIDTH, GRID_HEIGHT);
 	clearScreen();
-	while (1) { // TODO: end game if/when cells converge and don't change
+	while (true) { // TODO: end game if/when cells converge and don't change
 		resetCursor();
-		computeCells(&cells, GRID_WIDTH, GRID_HEIGHT);
+		computeCells(&cells, GRID_WIDTH, GRID_HEIGHT, args->wrapAround);
 		renderCells(&cells, GRID_WIDTH, GRID_HEIGHT);
 		wait();
 	}

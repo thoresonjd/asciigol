@@ -9,6 +9,12 @@
 #ifndef ASCIIGOL_H
 #define ASCIIGOL_H
 
-void asciigol();
+#include <stdbool.h>
+
+struct AsciigolArgs {
+	bool wrapAround;
+};
+
+void asciigol(const struct AsciigolArgs* const args);
 
 #endif // ASCIIGOL_H

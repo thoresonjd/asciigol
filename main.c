@@ -6,8 +6,19 @@
  */
 
 #include "asciigol.h"
+#include <stdbool.h>
+#include <string.h>
 
-int main() {
-	asciigol();
+static void parseArgs(struct AsciigolArgs* const args, const int argc, char** const argv) {
+	for (int i = 1; i < argc; i++)
+		if (!strcmp("--wrap", argv[i]) && !args->wrapAround)
+			args->wrapAround = true;
+}
+
+int main(int argc, char** argv) {
+	struct AsciigolArgs args;
+	parseArgs(&args, argc, argv);
+	asciigol(&args);
 	return 0;
 }
+
