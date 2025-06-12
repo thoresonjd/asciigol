@@ -14,6 +14,7 @@
 struct AsciigolArgs {
 	unsigned int width;
 	unsigned int height;
+	char* filename;
 	char character;
 	bool wrapAround;
 };
