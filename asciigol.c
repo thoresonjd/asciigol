@@ -16,7 +16,7 @@ static const unsigned int DEFAULT_WIDTH = 100;
 static const unsigned int DEFAULT_HEIGHT = 40;
 static const unsigned int MAX_WIDTH = 250;
 static const unsigned int MAX_HEIGHT = 100;
-static const unsigned int SLEEP_TIME_MILLIS = 50;
+static const unsigned int DEFAULT_DELAY_MILLIS = 50;
 static const unsigned int MICROS_PER_MILLI = 1000;
 static const char DEFAULT_LIVE_CELL_CHAR = '#';
 static const char DEAD_CELL_CHAR = ' ';
@@ -29,8 +29,8 @@ static void resetCursor() {
 	printf("\x1b[H");
 }
 
-static void wait() {
-	usleep(SLEEP_TIME_MILLIS * MICROS_PER_MILLI);
+static void wait(const unsigned int delay) {
+	usleep((delay ? delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
 }
 
 // TODO: cleanup if and where possible
@@ -211,7 +211,7 @@ void asciigol(struct AsciigolArgs args) {
 		resetCursor();
 		renderCells(&cells, args.width, args.height, args.character);
 		computeCells(&cells, args.width, args.height, args.wrapAround);
-		wait();
+		wait(args.delay);
 	}
 }
 
