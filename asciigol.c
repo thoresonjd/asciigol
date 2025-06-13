@@ -18,8 +18,8 @@ static const unsigned int MAX_WIDTH = 250;
 static const unsigned int MAX_HEIGHT = 100;
 static const unsigned int DEFAULT_DELAY_MILLIS = 50;
 static const unsigned int MICROS_PER_MILLI = 1000;
-static const char DEFAULT_LIVE_CELL_CHAR = '#';
-static const char DEAD_CELL_CHAR = ' ';
+static const char DEFAULT_LIVE_CHAR = '#';
+static const char DEFAULT_DEAD_CHAR = ' ';
 
 static void clearScreen() {
 	printf("\x1b[2J");
@@ -190,10 +190,13 @@ static void computeCells(char** cells, int width, int height, bool wrap) {
 	*cells = newCells;
 }
 
-static void renderCells(char** cells, int width, int height, char character) {
+static void renderCells(char** cells, const int width, const int height, const char liveChar, const char deadChar) {
 	int size = width * height;
 	for (int i = 0; i < size; i++) {
-		putchar((*cells)[i] ? character ? character : DEFAULT_LIVE_CELL_CHAR : DEAD_CELL_CHAR);
+		const char character = (*cells)[i] ?
+				(liveChar ? liveChar : DEFAULT_LIVE_CHAR) :
+				(deadChar ? deadChar : DEFAULT_DEAD_CHAR);
+		putchar(character);
 		if (i % width == width - 1)
 			putchar('\n');
 	}
@@ -209,7 +212,7 @@ void asciigol(struct AsciigolArgs args) {
 	clearScreen();
 	while (true) { // TODO: end game if/when cells converge and don't change
 		resetCursor();
-		renderCells(&cells, args.width, args.height, args.character);
+		renderCells(&cells, args.width, args.height, args.liveChar, args.deadChar);
 		computeCells(&cells, args.width, args.height, args.wrapAround);
 		wait(args.delay);
 	}

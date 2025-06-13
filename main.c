@@ -14,13 +14,15 @@ static bool parseArgs(struct AsciigolArgs* const args, const int argc, char** co
 	const char WIDTH_PARAM[] = "--width=";
 	const char HEIGHT_PARAM[] = "--height=";
 	const char DELAY_PARAM[] = "--delay=";
-	const char CHAR_PARAM[] = "--char=";
+	const char LIVE_CHAR_PARAM[] = "--live-char=";
+	const char DEAD_CHAR_PARAM[] = "--dead-char=";
 	const char FILE_PARAM[] = "--file=";
 	const char WRAP_PARAM[] = "--wrap";
 	const size_t WIDTH_PARAM_SIZE = sizeof(WIDTH_PARAM) - 1;
 	const size_t HEIGHT_PARAM_SIZE = sizeof(HEIGHT_PARAM) - 1;
 	const size_t DELAY_PARAM_SIZE = sizeof(DELAY_PARAM) - 1;
-	const size_t CHAR_PARAM_SIZE = sizeof(CHAR_PARAM) - 1;
+	const size_t LIVE_CHAR_PARAM_SIZE = sizeof(LIVE_CHAR_PARAM) - 1;
+	const size_t DEAD_CHAR_PARAM_SIZE = sizeof(DEAD_CHAR_PARAM) - 1;
 	const size_t FILE_PARAM_SIZE = sizeof(FILE_PARAM) - 1;
 	for (int i = 1; i < argc; i++) {
 		char* const arg = argv[i];
@@ -34,8 +36,10 @@ static bool parseArgs(struct AsciigolArgs* const args, const int argc, char** co
 			res = sscanf(arg + HEIGHT_PARAM_SIZE, "%u", &args->height);
 		} else if (!strncmp(DELAY_PARAM, arg, DELAY_PARAM_SIZE) && !args->delay) {
 			res = sscanf(arg + DELAY_PARAM_SIZE, "%u", &args->delay);
-		} else if (!strncmp(CHAR_PARAM, arg, CHAR_PARAM_SIZE) && !args->character) {
-			res = sscanf(arg + CHAR_PARAM_SIZE, "%c", &args->character);
+		} else if (!strncmp(LIVE_CHAR_PARAM, arg, LIVE_CHAR_PARAM_SIZE) && !args->liveChar) {
+			res = sscanf(arg + LIVE_CHAR_PARAM_SIZE, "%c", &args->liveChar);
+		} else if (!strncmp(DEAD_CHAR_PARAM, arg, DEAD_CHAR_PARAM_SIZE) && !args->deadChar) {
+			res = sscanf(arg + DEAD_CHAR_PARAM_SIZE, "%c", &args->deadChar);
 		} else if (!strncmp(FILE_PARAM, arg, FILE_PARAM_SIZE) && argSize > FILE_PARAM_SIZE && !args->filename) {
 			args->filename = arg + FILE_PARAM_SIZE;
 		} else if (!strcmp(WRAP_PARAM, arg) && !args->wrapAround) {

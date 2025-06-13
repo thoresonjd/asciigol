@@ -16,7 +16,8 @@ struct AsciigolArgs {
 	unsigned int height;
 	unsigned int delay;
 	char* filename;
-	char character;
+	char liveChar;
+	char deadChar;
 	bool wrapAround;
 };
 
