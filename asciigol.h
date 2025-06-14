@@ -21,6 +21,14 @@ struct AsciigolArgs {
 	bool wrapAround;
 };
 
+enum AsciigolError {
+	ASCIIGOL_OK = 0,
+	ASCIIGOL_BADFILE = 1,
+	ASCIIGOL_BADHEADER = 2,
+	ASCIIGOL_BADDIMENSION = 3,
+	ASCIIGOL_BADCELL = 4,
+};
+
 void asciigol(struct AsciigolArgs args);
 
 #endif // ASCIIGOL_H
