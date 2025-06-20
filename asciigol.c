@@ -20,6 +20,7 @@ static const unsigned int DEFAULT_DELAY_MILLIS = 50;
 static const unsigned int MICROS_PER_MILLI = 1000;
 static const char DEFAULT_LIVE_CHAR = '#';
 static const char DEFAULT_DEAD_CHAR = ' ';
+static bool g_converged = false;
 
 static void clear_screen() {
 	printf("\x1b[2J");
@@ -155,7 +156,7 @@ static asciigol_error_t init_cells_at_random(char** cells, unsigned int* const w
 	int size = *width * *height;
 	*cells = (char*)malloc(size);
 	if (!cells)
-		return ASCIIGOL_BAD_DIMENSION; // TODO: change to different error
+		return ASCIIGOL_BAD_DIMENSION;
 	srand(time(NULL));
 	for (int i = 0; i < size; i++)
 		(*cells)[i] = rand() % 2;
@@ -215,10 +216,15 @@ static char compute_cell(char** cells, int row, int col, int width, int height, 
 static void compute_cells(char** cells, int width, int height, bool wrap) {
 	int size = width * height;
 	char* new_cells = (char*)malloc(size);
+	g_converged = true;
 	for (int i = 0; i < size; i++) {
 		int row = i / width;
 		int col = i % width;
-		new_cells[i] = compute_cell(cells, row, col, width, height, wrap);
+		char cell = (*cells)[i];
+		char new_cell = compute_cell(cells, row, col, width, height, wrap);
+		if (cell != new_cell)
+			g_converged = false;
+		new_cells[i] = new_cell;
 	}
 	free(*cells);
 	*cells = new_cells;
@@ -241,7 +247,7 @@ asciigol_error_t asciigol(asciigol_args_t args) {
 	asciigol_error_t result = init_cells(&cells, &args.width, &args.height, args.filename);
 	if (result == ASCIIGOL_OK) {
 		clear_screen();
-		while (true) { // TODO: end game if/when cells converge and don't change
+		while (!g_converged) { // TODO: free final allocation of cells when loop terminates
 			reset_cursor();
 			render_cells(&cells, args.width, args.height, args.live_char, args.dead_char);
 			compute_cells(&cells, args.width, args.height, args.wrap);
