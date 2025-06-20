@@ -11,25 +11,25 @@
 
 #include <stdbool.h>
 
-struct AsciigolArgs {
+typedef struct {
 	unsigned int width;
 	unsigned int height;
 	unsigned int delay;
 	char* filename;
-	char liveChar;
-	char deadChar;
-	bool wrapAround;
-};
+	char live_char;
+	char dead_char;
+	bool wrap;
+} asciigol_args_t;
 
-enum AsciigolError {
+typedef enum {
 	ASCIIGOL_OK = 0,
-	ASCIIGOL_BADFILE = 1,
-	ASCIIGOL_BADHEADER = 2,
-	ASCIIGOL_BADDIMENSION = 3,
-	ASCIIGOL_BADCELL = 4,
-};
+	ASCIIGOL_BAD_FILE = 1,
+	ASCIIGOL_BAD_HEADER = 2,
+	ASCIIGOL_BAD_DIMENSION = 3,
+	ASCIIGOL_BAD_CELL = 4,
+} asciigol_error_t;
 
-void asciigol(struct AsciigolArgs args);
+asciigol_error_t asciigol(asciigol_args_t args);
 
 #endif // ASCIIGOL_H
 

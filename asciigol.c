@@ -21,11 +21,11 @@ static const unsigned int MICROS_PER_MILLI = 1000;
 static const char DEFAULT_LIVE_CHAR = '#';
 static const char DEFAULT_DEAD_CHAR = ' ';
 
-static void clearScreen() {
+static void clear_screen() {
 	printf("\x1b[2J");
 }
 
-static void resetCursor() {
+static void reset_cursor() {
 	printf("\x1b[H");
 }
 
@@ -33,191 +33,221 @@ static void wait(const unsigned int delay) {
 	usleep((delay ? delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
 }
 
-static enum AsciigolError initCellsFromFile(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
-	enum AsciigolError result = ASCIIGOL_OK;
-	FILE* file = fopen(filename, "r");
-	if (!file)
-		result = ASCIIGOL_BADFILE;
-	// read constant first line: "asciigol"
+static asciigol_error_t init_cells_from_file(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
+	char character;
+	int temp_width, temp_height;
+	unsigned int size;
+	unsigned int index = 0, row = 0, col = 0;
 	char* line = NULL;
-	size_t lineLen = 0;
-	if (getline(&line, &lineLen, file) <= 0) {
-		result = ASCIIGOL_BADHEADER;
+	size_t line_len = 0;
+	asciigol_error_t result = ASCIIGOL_OK;
+	FILE* file = fopen(filename, "r");
+
+	/****************************************
+	 * read constant first line: "asciigol" *
+	 ****************************************/
+
+	if (!file) {
+		result = ASCIIGOL_BAD_FILE;
+		goto EXIT;
+	}
+	if (getline(&line, &line_len, file) <= 0) {
+		result = ASCIIGOL_BAD_HEADER;
 		goto EXIT;
 	}
 	if (strcmp(line, "asciigol\n")) {
-		result = ASCIIGOL_BADHEADER;
+		result = ASCIIGOL_BAD_HEADER;
 		goto EXIT;
 	}
-	// read width and height
+
+	/*************************
+	 * read width and height *
+	 *************************/
+
 	free(line);
 	line = NULL;
-	if (getline(&line, &lineLen, file) <= 0) {
-		result = ASCIIGOL_BADDIMENSION;
+	if (getline(&line, &line_len, file) <= 0) {
+		result = ASCIIGOL_BAD_DIMENSION;
 		goto EXIT;
 	}
-	int tempWidth, tempHeight;
-	if (sscanf(line, "%d,%d", &tempWidth, &tempHeight) < 2) {
-		result = ASCIIGOL_BADDIMENSION;
+	if (sscanf(line, "%d,%d", &temp_width, &temp_height) < 2) {
+		result = ASCIIGOL_BAD_DIMENSION;
 		goto EXIT;
 	}
-	if (tempWidth <= 0 || tempWidth > MAX_WIDTH || tempHeight <= 0 || tempHeight > MAX_HEIGHT) {
-		result = ASCIIGOL_BADDIMENSION;
+	if (temp_width <= 0 || temp_width > MAX_WIDTH || temp_height <= 0 || temp_height > MAX_HEIGHT) {
+		result = ASCIIGOL_BAD_DIMENSION;
 		goto EXIT;
 	}
-	*width = (unsigned int)tempWidth;
-	*height = (unsigned int)tempHeight;
-	// read initial cell states
-	unsigned int size = *width * *height;
+	*width = (unsigned int)temp_width;
+	*height = (unsigned int)temp_height;
+
+	/****************************
+	 * read initial cell states *
+	 ****************************/
+
+	size = *width * *height;
 	*cells = (char*)malloc(size);
 	if (!cells) {
-		result = ASCIIGOL_BADDIMENSION; // TODO: change to different error
+		result = ASCIIGOL_BAD_DIMENSION;
 		goto EXIT;
 	}
-	char c;
-	unsigned int index = 0, widthCount = 0, heightCount = 0;
-	while((c = getc(file)) != EOF) {
-		if (heightCount >= *height) {
-			result = ASCIIGOL_BADDIMENSION;
+
+	// iterate through remaining characters of file
+	while((character = getc(file)) != EOF) {
+
+		// error if number of rows greater than specified height
+		if (row >= *height) {
+			result = ASCIIGOL_BAD_DIMENSION;
 			goto EXIT;
 		}
-		if (c == '\n') {
-			if (widthCount < *width) {
-				result = ASCIIGOL_BADDIMENSION;
+
+		// reached end of row
+		if (character == '\n') {
+			// error if number of columns less than specified width
+			if (col < *width) {
+				result = ASCIIGOL_BAD_DIMENSION;
 				goto EXIT;
 			}
-			heightCount++;
-			widthCount = 0;
+			row++;
+			col = 0;
 			continue;
 		}
-		if (c != '0' && c != '1') {
-			result = ASCIIGOL_BADCELL;
+
+		// error if cell is not '0' or '1'
+		if (character != '0' && character != '1') {
+			result = ASCIIGOL_BAD_CELL;
 			goto EXIT;
 		}
-		if (++widthCount > *width) {
-			result = ASCIIGOL_BADDIMENSION;
+
+		// error if number of columns greater than specified width
+		if (++col > *width) {
+			result = ASCIIGOL_BAD_DIMENSION;
 			goto EXIT;
 		}
-		(*cells)[index++] = c - '0'; // literal integer 1 or 0, not ASCII value
+
+		// convert '0' or '1' to integer representation
+		(*cells)[index++] = character - '0';
 	}
-	if (heightCount < *height) {
-		result = ASCIIGOL_BADDIMENSION;
-		goto EXIT;
-	}
+
+	// error if number of rows less than specified height
+	if (row < *height)
+		result = ASCIIGOL_BAD_DIMENSION;
+
+	/***********
+	 * cleanup *
+	 ***********/
 
 EXIT:
 	if (line)
 		free(line);
-	if (*cells)
+	if (*cells && result != ASCIIGOL_OK)
 		free(*cells);
 	if (file)
 		fclose(file);
 	return result;
 }
 
-static enum AsciigolError initCellsAtRandom(char** cells, unsigned int* const width, unsigned int* const height) {
+static asciigol_error_t init_cells_at_random(char** cells, unsigned int* const width, unsigned int* const height) {
 	if (*width > MAX_WIDTH || *height > MAX_HEIGHT)
-		return ASCIIGOL_BADDIMENSION;
+		return ASCIIGOL_BAD_DIMENSION;
 	*width = *width ? *width : DEFAULT_WIDTH;
 	*height = *height ? *height : DEFAULT_HEIGHT;
 	int size = *width * *height;
 	*cells = (char*)malloc(size);
 	if (!cells)
-		return ASCIIGOL_BADDIMENSION; // TODO: change to different error
+		return ASCIIGOL_BAD_DIMENSION; // TODO: change to different error
 	srand(time(NULL));
 	for (int i = 0; i < size; i++)
 		(*cells)[i] = rand() % 2;
 	return ASCIIGOL_OK;
 }
 
-static enum AsciigolError initCells(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
+static asciigol_error_t init_cells(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
 	if (filename)
-		return initCellsFromFile(cells, width, height, filename);
-	return initCellsAtRandom(cells, width, height);
+		return init_cells_from_file(cells, width, height, filename);
+	return init_cells_at_random(cells, width, height);
 }
 
-static char computeCell(char** cells, int row, int col, int width, int height, bool wrap) {
+static char compute_cell(char** cells, int row, int col, int width, int height, bool wrap) {
 	char cell = (*cells)[width * row + col];
 	// get neighbor range; will go out of grid range when wrap is enabled
-	int rowBegin = row || wrap ? row - 1 : row;
-	int colBegin = col || wrap ? col - 1 : col;
-	int rowEnd = row < height - 1 || wrap ? row + 1 : row;
-	int colEnd = col < width - 1 || wrap ? col + 1 : col;
-	int numLiveNeighbors = 0;
-	for (int r = rowBegin; r <= rowEnd; r++) {
+	int row_begin = row || wrap ? row - 1 : row;
+	int col_begin = col || wrap ? col - 1 : col;
+	int row_end = row < height - 1 || wrap ? row + 1 : row;
+	int col_end = col < width - 1 || wrap ? col + 1 : col;
+	int num_live_neighbors = 0;
+	for (int r = row_begin; r <= row_end; r++) {
 
 		// account for wrap around
-		int neighborRow = r;
-		if (neighborRow == -1)
-			neighborRow = height - 1;
-		else if (neighborRow == height)
-			neighborRow = 0;
+		int neighbor_row = r;
+		if (neighbor_row == -1)
+			neighbor_row = height - 1;
+		else if (neighbor_row == height)
+			neighbor_row = 0;
 
-		for (int c = colBegin; c <= colEnd; c++) {
+		for (int c = col_begin; c <= col_end; c++) {
 
 			// account for wrap around
-			int neighborCol = c;
-			if (neighborCol == -1)
-				neighborCol = width - 1;
-			else if (neighborCol == width)
-				neighborCol = 0;
+			int neighbor_col = c;
+			if (neighbor_col == -1)
+				neighbor_col = width - 1;
+			else if (neighbor_col == width)
+				neighbor_col = 0;
 
 			// count neighbor if live
-			int neighbor = (*cells)[width * neighborRow + neighborCol];
-			if (neighbor && (neighborRow != row || neighborCol != col))
-				numLiveNeighbors++;
+			int neighbor = (*cells)[width * neighbor_row + neighbor_col];
+			if (neighbor && (neighbor_row != row || neighbor_col != col))
+				num_live_neighbors++;
 		}
 	}
 	// GOL rules
-	if (cell && numLiveNeighbors < 2)
+	if (cell && num_live_neighbors < 2)
 		return 0;
-	if (cell && (numLiveNeighbors == 2 || numLiveNeighbors == 3))
+	if (cell && (num_live_neighbors == 2 || num_live_neighbors == 3))
 		return 1;
-	if (cell && numLiveNeighbors > 3)
+	if (cell && num_live_neighbors > 3)
 		return 0;
-	if (!cell && numLiveNeighbors == 3)
+	if (!cell && num_live_neighbors == 3)
 		return 1;
 	return 0;
 }
 
-static void computeCells(char** cells, int width, int height, bool wrap) {
+static void compute_cells(char** cells, int width, int height, bool wrap) {
 	int size = width * height;
-	char* newCells = (char*)malloc(size);
+	char* new_cells = (char*)malloc(size);
 	for (int i = 0; i < size; i++) {
 		int row = i / width;
 		int col = i % width;
-		newCells[i] = computeCell(cells, row, col, width, height, wrap);
+		new_cells[i] = compute_cell(cells, row, col, width, height, wrap);
 	}
 	free(*cells);
-	*cells = newCells;
+	*cells = new_cells;
 }
 
-static void renderCells(char** cells, const int width, const int height, const char liveChar, const char deadChar) {
+static void render_cells(char** cells, const int width, const int height, const char live_char, const char dead_char) {
 	int size = width * height;
 	for (int i = 0; i < size; i++) {
 		const char character = (*cells)[i] ?
-				(liveChar ? liveChar : DEFAULT_LIVE_CHAR) :
-				(deadChar ? deadChar : DEFAULT_DEAD_CHAR);
+				(live_char ? live_char : DEFAULT_LIVE_CHAR) :
+				(dead_char ? dead_char : DEFAULT_DEAD_CHAR);
 		putchar(character);
 		if (i % width == width - 1)
 			putchar('\n');
 	}
 }
 
-void asciigol(struct AsciigolArgs args) {
+asciigol_error_t asciigol(asciigol_args_t args) {
 	char* cells = NULL;
-	enum AsciigolError result = initCells(&cells, &args.width, &args.height, args.filename);
-	if (result) {
-		// TODO: avoid printing here and return the error code instead
-		printf("Failed to initialize cells - error number %d\n", result);
-		return;
+	asciigol_error_t result = init_cells(&cells, &args.width, &args.height, args.filename);
+	if (result == ASCIIGOL_OK) {
+		clear_screen();
+		while (true) { // TODO: end game if/when cells converge and don't change
+			reset_cursor();
+			render_cells(&cells, args.width, args.height, args.live_char, args.dead_char);
+			compute_cells(&cells, args.width, args.height, args.wrap);
+			wait(args.delay);
+		}
 	}
-	clearScreen();
-	while (true) { // TODO: end game if/when cells converge and don't change
-		resetCursor();
-		renderCells(&cells, args.width, args.height, args.liveChar, args.deadChar);
-		computeCells(&cells, args.width, args.height, args.wrapAround);
-		wait(args.delay);
-	}
+	return result;
 }
 

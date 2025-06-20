@@ -1,21 +1,21 @@
 {
-   parseArgs_uninitialized_var
+   parse_args_uninitialized_var
    Memcheck:Cond
-   fun:parseArgs
+   fun:parse_args
    fun:main
 }
 {   
-   renderCells_uninitialized_var
+   render_cells_uninitialized_var
    Memcheck:Cond
-   fun:renderCells
+   fun:render_cells
    fun:asciigol
    fun:main
 }
 {
-   computeCell_uninitialized_var
+   compute_cell_uninitialized_var
    Memcheck:Cond
-   fun:computeCell
-   fun:computeCells
+   fun:compute_cell
+   fun:compute_cells
    fun:asciigol
    fun:main
 }
