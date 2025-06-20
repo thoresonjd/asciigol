@@ -1,6 +1,7 @@
 {
-   parse_args_uninitialized_var
+   parse_arg_uninitialized_var
    Memcheck:Cond
+   fun:parse_arg
    fun:parse_args
    fun:main
 }
