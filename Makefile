@@ -5,7 +5,7 @@
 # - `make run`: Builds and runs the asciigol program
 
 C = gcc
-C_FLAGS = -Wall -Werror -pedantic -ggdb -O0
+C_FLAGS = -std=gnu11 -Wall -Werror -pedantic -ggdb -O0
 PROGRAM = asciigol
 
 $(PROGRAM): main.c $(PROGRAM).c
