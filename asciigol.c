@@ -20,7 +20,6 @@ static const unsigned int DEFAULT_DELAY_MILLIS = 50;
 static const unsigned int MICROS_PER_MILLI = 1000;
 static const char DEFAULT_LIVE_CHAR = '#';
 static const char DEFAULT_DEAD_CHAR = ' ';
-static bool g_converged = false;
 
 static void clear_screen() {
 	printf("\x1b[2J");
@@ -34,14 +33,14 @@ static void wait(const unsigned int delay) {
 	usleep((delay ? delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
 }
 
-static asciigol_error_t init_cells_from_file(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
+static asciigol_result_t init_cells_from_file(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
 	char character;
 	int temp_width, temp_height;
 	unsigned int size;
 	unsigned int index = 0, row = 0, col = 0;
 	char* line = NULL;
 	size_t line_len = 0;
-	asciigol_error_t result = ASCIIGOL_OK;
+	asciigol_result_t result = ASCIIGOL_OK;
 	FILE* file = fopen(filename, "r");
 
 	/****************************************
@@ -139,16 +138,22 @@ static asciigol_error_t init_cells_from_file(char** cells, unsigned int* const w
 	 ***********/
 
 EXIT:
-	if (line)
+	if (line) {
 		free(line);
-	if (*cells && result != ASCIIGOL_OK)
+		line = NULL;
+	}
+	if (*cells && result != ASCIIGOL_OK) {
 		free(*cells);
-	if (file)
+		*cells = NULL;
+	}
+	if (file) {
 		fclose(file);
+		file = NULL;
+	}
 	return result;
 }
 
-static asciigol_error_t init_cells_at_random(char** cells, unsigned int* const width, unsigned int* const height) {
+static asciigol_result_t init_cells_at_random(char** cells, unsigned int* const width, unsigned int* const height) {
 	if (*width > MAX_WIDTH || *height > MAX_HEIGHT)
 		return ASCIIGOL_BAD_DIMENSION;
 	*width = *width ? *width : DEFAULT_WIDTH;
@@ -163,7 +168,7 @@ static asciigol_error_t init_cells_at_random(char** cells, unsigned int* const w
 	return ASCIIGOL_OK;
 }
 
-static asciigol_error_t init_cells(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
+static asciigol_result_t init_cells(char** cells, unsigned int* const width, unsigned int* const height, char* const filename) {
 	if (filename)
 		return init_cells_from_file(cells, width, height, filename);
 	return init_cells_at_random(cells, width, height);
@@ -213,21 +218,22 @@ static char compute_cell(char** cells, int row, int col, int width, int height, 
 	return 0;
 }
 
-static void compute_cells(char** cells, int width, int height, bool wrap) {
+static asciigol_result_t compute_cells(char** cells, int width, int height, bool wrap) {
 	int size = width * height;
 	char* new_cells = (char*)malloc(size);
-	g_converged = true;
+	bool converged = true;
 	for (int i = 0; i < size; i++) {
 		int row = i / width;
 		int col = i % width;
 		char cell = (*cells)[i];
 		char new_cell = compute_cell(cells, row, col, width, height, wrap);
 		if (cell != new_cell)
-			g_converged = false;
+			converged = false;
 		new_cells[i] = new_cell;
 	}
 	free(*cells);
 	*cells = new_cells;
+	return converged ? ASCIIGOL_CONVERGED : ASCIIGOL_OK;
 }
 
 static void render_cells(char** cells, const int width, const int height, const char live_char, const char dead_char) {
@@ -242,17 +248,17 @@ static void render_cells(char** cells, const int width, const int height, const 
 	}
 }
 
-asciigol_error_t asciigol(asciigol_args_t args) {
+asciigol_result_t asciigol(asciigol_args_t args) {
 	char* cells = NULL;
-	asciigol_error_t result = init_cells(&cells, &args.width, &args.height, args.filename);
-	if (result == ASCIIGOL_OK) {
-		clear_screen();
-		while (!g_converged) { // TODO: free final allocation of cells when loop terminates
-			reset_cursor();
-			render_cells(&cells, args.width, args.height, args.live_char, args.dead_char);
-			compute_cells(&cells, args.width, args.height, args.wrap);
-			wait(args.delay);
-		}
+	asciigol_result_t result = init_cells(&cells, &args.width, &args.height, args.filename);
+	if (result != ASCIIGOL_OK)
+		return result;
+	clear_screen();
+	while (result != ASCIIGOL_CONVERGED) {
+		reset_cursor();
+		render_cells(&cells, args.width, args.height, args.live_char, args.dead_char);
+		result = compute_cells(&cells, args.width, args.height, args.wrap);
+		wait(args.delay);
 	}
 	return result;
 }

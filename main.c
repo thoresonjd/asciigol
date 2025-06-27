@@ -113,9 +113,9 @@ int main(int argc, char** argv) {
 	asciigol_args_t args;
 	if (!parse_args(&args, argc, argv))
 		return EXIT_FAILURE;
-	asciigol_error_t error = asciigol(args);
-	printf("asciigol terminated with error code: %d\n", error);
-	if (error != ASCIIGOL_OK)
+	asciigol_result_t result = asciigol(args);
+	printf("asciigol terminated with result: %d\n", result);
+	if (result != ASCIIGOL_OK || result != ASCIIGOL_CONVERGED)
 		return EXIT_FAILURE;
 	return EXIT_SUCCESS;
 }

@@ -21,16 +21,16 @@ typedef struct {
 	bool wrap;
 } asciigol_args_t;
 
-// TODO: add error codes to possibly avoid tracking convergence state with global variable
 typedef enum {
-	ASCIIGOL_OK = 0,
-	ASCIIGOL_BAD_FILE = 1,
-	ASCIIGOL_BAD_HEADER = 2,
-	ASCIIGOL_BAD_DIMENSION = 3,
-	ASCIIGOL_BAD_CELL = 4,
-} asciigol_error_t;
+	ASCIIGOL_OK,
+	ASCIIGOL_CONVERGED,
+	ASCIIGOL_BAD_FILE,
+	ASCIIGOL_BAD_HEADER,
+	ASCIIGOL_BAD_DIMENSION,
+	ASCIIGOL_BAD_CELL,
+} asciigol_result_t;
 
-asciigol_error_t asciigol(asciigol_args_t args);
+asciigol_result_t asciigol(asciigol_args_t args);
 
 #endif // ASCIIGOL_H
 
