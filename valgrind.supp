@@ -5,6 +5,21 @@
    fun:parse_args
    fun:main
 }
+{
+   init_cells_uninitialized_var
+   Memcheck:Cond
+   fun:init_cells
+   fun:asciigol
+   fun:main
+}
+{
+   init_cells_at_random_uninitialized_var
+   Memcheck:Cond
+   fun:init_cells_at_random
+   fun:init_cells
+   fun:asciigol
+   fun:main
+}
 {   
    render_cells_uninitialized_var
    Memcheck:Cond
