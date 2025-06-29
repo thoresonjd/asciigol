@@ -11,6 +11,9 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Arguments to be given to the asciigol program.
+ */
 typedef struct {
 	unsigned int width;
 	unsigned int height;
@@ -21,6 +24,9 @@ typedef struct {
 	bool wrap;
 } asciigol_args_t;
 
+/**
+ * @brief Result codes returned by the asciigol program.
+ */
 typedef enum {
 	ASCIIGOL_OK,
 	ASCIIGOL_CONVERGED,
@@ -30,6 +36,11 @@ typedef enum {
 	ASCIIGOL_BAD_CELL,
 } asciigol_result_t;
 
+/**
+ * @brief Execute ASCII Game of Life.
+ * @param[in] args A structure of arguments to configure asciigol with.
+ * @return An enum denoting the asciigol result code.
+ */
 asciigol_result_t asciigol(asciigol_args_t args);
 
 #endif // ASCIIGOL_H
