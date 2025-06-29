@@ -2,6 +2,20 @@
 
 An implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life) animated as ASCII in the terminal.
 
+## Demos
+
+### Random initial state
+
+https://github.com/user-attachments/assets/c1310bc3-42ff-4693-a7a3-0280adfd53ed
+
+### Gosper glider gun
+
+https://github.com/user-attachments/assets/4bc1f77b-d9b0-4b22-a1a0-079e9e85a318
+
+### One in three cells are initially alive
+
+https://github.com/user-attachments/assets/a69cbad0-ac1d-455a-afe6-f38946959efd
+
 ## Usage
 
 To build the program, run
@@ -72,13 +86,3 @@ asciigol
 ```
 
 Sample configuration files, including invalid ones, are located in the `config/` directory.
-
-## Demo
-
-Random initial state
-
-https://github.com/user-attachments/assets/e37a5c96-41ec-46ca-a5bf-e3a5557ec02e
-
-One in three cells are initially alive
-
-https://github.com/user-attachments/assets/f81ddbb4-ae50-4695-abf1-fda95ccc1a84
