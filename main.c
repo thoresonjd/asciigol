@@ -110,7 +110,7 @@ static bool parse_args(asciigol_args_t* const args, const int argc, char** const
 }
 
 int main(int argc, char** argv) {
-	asciigol_args_t args;
+	asciigol_args_t args = { 0 };
 	if (!parse_args(&args, argc, argv))
 		return EXIT_FAILURE;
 	asciigol_result_t result = asciigol(args);
