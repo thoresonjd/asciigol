@@ -60,6 +60,38 @@
    fun:main
 }
 {
+   init_cells_from_file_file_open_on_interrupt
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:__fopen_internal
+   fun:fopen@@GLIBC_2.2.5
+   fun:init_cells_from_file
+   fun:init_cells
+   fun:asciigol
+   fun:main
+}
+{
+   init_cells_from_file_leak_on_interrupt
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:init_cells_from_file
+   fun:init_cells
+   fun:asciigol
+   fun:main
+}
+{
+   init_cells_at_random_leak_on_interrupt
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:init_cells_at_random
+   fun:init_cells
+   fun:asciigol
+   fun:main
+}
+{
    compute_cells_leak_on_interrupt
    Memcheck:Leak
    match-leak-kinds: reachable
