@@ -13,16 +13,16 @@
 #include <string.h>
 
 static const char* USAGE =
-	"Usage: <parameter>=<value>\n"
-	"Parameter   | Value\n"
-	"------------+---------------------\n"
-	"--width     | Non-negative integer\n"
-	"--height    | Non-negative integer\n"
-	"--delay     | Non-negative integer\n"
-	"--live-char | ASCII character\n"
-	"--dead-char | ASCII character\n"
-	"--file      | Name of file on system\n"
-	"--wrap      | Literal true or false\n";
+	"Usage: ./asciigol [arguments]\n"
+	"Parameters:\n"
+	"\t--width=<uint8>    width of grid\n"
+	"\t--height=<uint8>   height of grid\n"
+	"\t--delay=<uint16>   delay between frames in milliseconds\n"
+	"\t--live-char=<char> character representing a live cell\n"
+	"\t--dead-char=<char> character representing a dead cell\n"
+	"\t--file=<string>    custom configuration file\n"
+	"\t--wrap=true|false  reaching row/column limit will\n"
+	"\t                   wrap around to the other end\n";
 
 static bool parse_uint8(char* const arg, uint8_t* value) {
 	if (!arg || !value)
