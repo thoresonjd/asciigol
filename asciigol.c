@@ -264,6 +264,10 @@ asciigol_result_t asciigol(asciigol_args_t args) {
 		result = compute_cells(&cells, args.width, args.height, args.wrap);
 		wait(args.delay);
 	}
+	if (cells) {
+		free(cells);
+		cells = NULL;
+	}
 	return result;
 }
 
