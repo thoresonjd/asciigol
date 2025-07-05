@@ -7,10 +7,10 @@
 
 #include "asciigol.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <string.h>
 
 static const char* USAGE =
 	"Usage: <parameter>=<value>\n"
@@ -24,15 +24,27 @@ static const char* USAGE =
 	"--file      | Name of file on system\n"
 	"--wrap      | Literal true or false\n";
 
-static bool parse_uint(char* const arg, unsigned int* value) {
+static bool parse_uint8(char* const arg, uint8_t* value) {
 	if (!arg || !value)
 		return false;
-	int temp_value;
-	if (!sscanf(arg, "%d", &temp_value))
+	int64_t temp_value;
+	if (!sscanf(arg, "%ld", &temp_value))
 		return false;
-	if (temp_value < 0 || temp_value > UINT_MAX)
+	if (temp_value < 0 || temp_value > UINT8_MAX)
 		return false;
-	*value = (unsigned int)temp_value;
+	*value = (uint8_t)temp_value;
+	return true;
+}
+
+static bool parse_uint16(char* const arg, uint16_t* value) {
+	if (!arg || !value)
+		return false;
+	int64_t temp_value;
+	if (!sscanf(arg, "%ld", &temp_value))
+		return false;
+	if (temp_value < 0 || temp_value > UINT16_MAX)
+		return false;
+	*value = (uint16_t)temp_value;
 	return true;
 }
 
@@ -82,11 +94,11 @@ static bool parse_arg(asciigol_args_t* const args, char* const arg) {
 	const size_t FILE_PARAM_SIZE = sizeof(FILE_PARAM) - 1;
 	const size_t WRAP_PARAM_SIZE= sizeof(WRAP_PARAM) - 1;
 	if (!strncmp(WIDTH_PARAM, arg, WIDTH_PARAM_SIZE) && !args->width)
-		return parse_uint(arg + WIDTH_PARAM_SIZE, &args->width);
+		return parse_uint8(arg + WIDTH_PARAM_SIZE, &args->width);
 	if (!strncmp(HEIGHT_PARAM, arg, HEIGHT_PARAM_SIZE) && !args->height)
-		return parse_uint(arg + HEIGHT_PARAM_SIZE, &args->height);
+		return parse_uint8(arg + HEIGHT_PARAM_SIZE, &args->height);
 	if (!strncmp(DELAY_PARAM, arg, DELAY_PARAM_SIZE) && !args->delay)
-		return parse_uint(arg + DELAY_PARAM_SIZE, &args->delay);
+		return parse_uint16(arg + DELAY_PARAM_SIZE, &args->delay);
 	if (!strncmp(LIVE_CHAR_PARAM, arg, LIVE_CHAR_PARAM_SIZE) && !args->live_char)
 		return parse_char(arg + LIVE_CHAR_PARAM_SIZE, &args->live_char);
 	if (!strncmp(DEAD_CHAR_PARAM, arg, DEAD_CHAR_PARAM_SIZE) && !args->dead_char)

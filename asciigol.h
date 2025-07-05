@@ -10,14 +10,15 @@
 #define ASCIIGOL_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * @brief Arguments to be given to the asciigol program.
  */
 typedef struct {
-	unsigned int width;
-	unsigned int height;
-	unsigned int delay;
+	uint8_t width;
+	uint8_t height;
+	uint16_t delay;
 	char* filename;
 	char live_char;
 	char dead_char;
