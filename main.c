@@ -110,7 +110,11 @@ static bool parse_arg(asciigol_args_t* const args, char* const arg) {
 	return true;
 }
 
-static bool parse_args(asciigol_args_t* const args, const int* const argc, char** const argv) {
+static bool parse_args(
+	asciigol_args_t* const args,
+	const int* const argc,
+	char** const argv
+) {
 	for (int i = 1; i < *argc; i++) {
 		char* const arg = argv[i];
 		if (!parse_arg(args, arg)) {

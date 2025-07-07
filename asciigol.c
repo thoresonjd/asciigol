@@ -33,7 +33,12 @@ static void wait(const uint16_t* const delay) {
 	usleep((*delay ? *delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
 }
 
-static asciigol_result_t init_cells_from_file(cell_t** cells, uint8_t* const width, uint8_t* const height, char* const filename) {
+static asciigol_result_t init_cells_from_file(
+	cell_t** cells,
+	uint8_t* const width,
+	uint8_t* const height,
+	char* const filename
+) {
 	char character;
 	int64_t temp_width, temp_height;
 	uint16_t size, index = 0;
@@ -153,7 +158,11 @@ EXIT:
 	return result;
 }
 
-static asciigol_result_t init_cells_at_random(cell_t** cells, uint8_t* const width, uint8_t* const height) {
+static asciigol_result_t init_cells_at_random(
+	cell_t** cells,
+	uint8_t* const width,
+	uint8_t* const height
+) {
 	if (*width > UINT8_MAX || *height > UINT8_MAX)
 		return ASCIIGOL_BAD_DIMENSION;
 	*width = *width ? *width : DEFAULT_WIDTH;
@@ -168,13 +177,25 @@ static asciigol_result_t init_cells_at_random(cell_t** cells, uint8_t* const wid
 	return ASCIIGOL_OK;
 }
 
-static asciigol_result_t init_cells(cell_t** cells, uint8_t* const width, uint8_t* const height, char* const filename) {
+static asciigol_result_t init_cells(
+	cell_t** cells,
+	uint8_t* const width,
+	uint8_t* const height,
+	char* const filename
+) {
 	if (filename)
 		return init_cells_from_file(cells, width, height, filename);
 	return init_cells_at_random(cells, width, height);
 }
 
-static uint8_t count_live_neighbors(cell_t** const cells, const uint8_t* const row, const uint8_t* const col, const uint8_t* const width, const uint8_t* const height, const bool* const wrap) {
+static uint8_t count_live_neighbors(
+	cell_t** const cells,
+	const uint8_t* const row,
+	const uint8_t* const col,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const bool* const wrap
+) {
 	// get neighbor range; will go out of grid range when wrap is enabled
 	int8_t row_begin = *row || *wrap ? *row - 1 : *row;
 	int8_t col_begin = *col || *wrap ? *col - 1 : *col;
@@ -212,7 +233,10 @@ static uint8_t count_live_neighbors(cell_t** const cells, const uint8_t* const r
 	return num_live_neighbors;
 }
 
-static cell_t compute_game_of_life(const cell_t* const cell, const uint8_t* const num_live_neighbors) {
+static cell_t compute_game_of_life(
+	const cell_t* const cell,
+	const uint8_t* const num_live_neighbors
+) {
 	// Game of Life rules
 	if (*cell && *num_live_neighbors < 2)
 		return 0;
@@ -225,13 +249,25 @@ static cell_t compute_game_of_life(const cell_t* const cell, const uint8_t* cons
 	return 0;
 }
 
-static cell_t compute_cell(cell_t** const cells, const uint8_t* const row, const uint8_t* const col, const uint8_t* const width, const uint8_t* const height, const bool* const wrap) {
+static cell_t compute_cell(
+	cell_t** const cells,
+	const uint8_t* const row,
+	const uint8_t* const col,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const bool* const wrap
+) {
 	cell_t cell = (*cells)[*width * *row + *col];
 	uint8_t num_live_neighbors = count_live_neighbors(cells, row, col, width, height, wrap);
 	return (cell_t)compute_game_of_life(&cell, &num_live_neighbors);
 }
 
-static asciigol_result_t compute_cells(cell_t** cells, const uint8_t* const width, const uint8_t* const height, const bool* const wrap) {
+static asciigol_result_t compute_cells(
+	cell_t** cells,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const bool* const wrap
+) {
 	uint16_t size = *width * *height;
 	cell_t* new_cells = (cell_t*)malloc(size);
 	bool converged = true;
@@ -249,7 +285,13 @@ static asciigol_result_t compute_cells(cell_t** cells, const uint8_t* const widt
 	return converged ? ASCIIGOL_CONVERGED : ASCIIGOL_OK;
 }
 
-static void render_cells(cell_t** const cells, const uint8_t* const width, const uint8_t* const height, const char* const live_char, const char* const dead_char) {
+static void render_cells(
+	cell_t** const cells,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const char* const live_char,
+	const char* const dead_char
+) {
 	uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
 		const char character = (*cells)[i] ?
