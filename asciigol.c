@@ -174,14 +174,13 @@ static asciigol_result_t init_cells(cell_t** cells, uint8_t* const width, uint8_
 	return init_cells_at_random(cells, width, height);
 }
 
-static cell_t compute_cell(cell_t** cells, uint8_t row, uint8_t col, uint8_t width, uint8_t height, bool wrap) {
-	cell_t cell = (*cells)[width * row + col];
+static uint8_t count_live_neighbors(cell_t** cells, const uint8_t row, const uint8_t col, const uint8_t width, const uint8_t height, const bool wrap) {
 	// get neighbor range; will go out of grid range when wrap is enabled
 	int8_t row_begin = row || wrap ? row - 1 : row;
 	int8_t col_begin = col || wrap ? col - 1 : col;
 	int8_t row_end = row < height - 1 || wrap ? row + 1 : row;
 	int8_t col_end = col < width - 1 || wrap ? col + 1 : col;
-	int8_t num_live_neighbors = 0;
+	uint8_t num_live_neighbors = 0;
 	for (int8_t r = row_begin; r <= row_end; r++) {
 
 		// account for wrap around
@@ -210,7 +209,11 @@ static cell_t compute_cell(cell_t** cells, uint8_t row, uint8_t col, uint8_t wid
 				num_live_neighbors++;
 		}
 	}
-	// GOL rules
+	return num_live_neighbors;
+}
+
+static cell_t compute_game_of_life(const cell_t cell, const uint8_t num_live_neighbors) {
+	// Game of Life rules
 	if (cell && num_live_neighbors < 2)
 		return 0;
 	if (cell && (num_live_neighbors == 2 || num_live_neighbors == 3))
@@ -220,6 +223,12 @@ static cell_t compute_cell(cell_t** cells, uint8_t row, uint8_t col, uint8_t wid
 	if (!cell && num_live_neighbors == 3)
 		return 1;
 	return 0;
+}
+
+static cell_t compute_cell(cell_t** cells, uint8_t row, uint8_t col, uint8_t width, uint8_t height, bool wrap) {
+	cell_t cell = (*cells)[width * row + col];
+	uint8_t num_live_neighbors = count_live_neighbors(cells, row, col, width, height, wrap);
+	return (cell_t)compute_game_of_life(cell, num_live_neighbors);
 }
 
 static asciigol_result_t compute_cells(cell_t** cells, uint8_t width, uint8_t height, bool wrap) {
