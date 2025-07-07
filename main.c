@@ -110,8 +110,8 @@ static bool parse_arg(asciigol_args_t* const args, char* const arg) {
 	return true;
 }
 
-static bool parse_args(asciigol_args_t* const args, const int argc, char** const argv) {
-	for (int i = 1; i < argc; i++) {
+static bool parse_args(asciigol_args_t* const args, const int* const argc, char** const argv) {
+	for (int i = 1; i < *argc; i++) {
 		char* const arg = argv[i];
 		if (!parse_arg(args, arg)) {
 			printf("Failed to parse: %s\n%s", arg, USAGE);
@@ -121,9 +121,9 @@ static bool parse_args(asciigol_args_t* const args, const int argc, char** const
 	return true;
 }
 
-static void print_asciigol_result(const asciigol_result_t result) {
+static void print_asciigol_result(const asciigol_result_t* const result) {
 	printf("Result: ");
-	switch (result) {
+	switch (*result) {
 		case ASCIIGOL_OK:
 			printf("ASCIIGOL_OK (%d)\n", ASCIIGOL_OK);
 			break;
@@ -149,10 +149,10 @@ static void print_asciigol_result(const asciigol_result_t result) {
 
 int main(int argc, char** argv) {
 	asciigol_args_t args = { 0 };
-	if (!parse_args(&args, argc, argv))
+	if (!parse_args(&args, &argc, argv))
 		return EXIT_FAILURE;
 	asciigol_result_t result = asciigol(args);
-	print_asciigol_result(result);
+	print_asciigol_result(&result);
 	if (result != ASCIIGOL_OK || result != ASCIIGOL_CONVERGED)
 		return EXIT_FAILURE;
 	return EXIT_SUCCESS;

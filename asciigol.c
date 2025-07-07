@@ -29,8 +29,8 @@ static void reset_cursor() {
 	printf("\x1b[H");
 }
 
-static void wait(const uint16_t delay) {
-	usleep((delay ? delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
+static void wait(const uint16_t* const delay) {
+	usleep((*delay ? *delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
 }
 
 static asciigol_result_t init_cells_from_file(cell_t** cells, uint8_t* const width, uint8_t* const height, char* const filename) {
@@ -174,20 +174,20 @@ static asciigol_result_t init_cells(cell_t** cells, uint8_t* const width, uint8_
 	return init_cells_at_random(cells, width, height);
 }
 
-static uint8_t count_live_neighbors(cell_t** const cells, const uint8_t row, const uint8_t col, const uint8_t width, const uint8_t height, const bool wrap) {
+static uint8_t count_live_neighbors(cell_t** const cells, const uint8_t* const row, const uint8_t* const col, const uint8_t* const width, const uint8_t* const height, const bool* const wrap) {
 	// get neighbor range; will go out of grid range when wrap is enabled
-	int8_t row_begin = row || wrap ? row - 1 : row;
-	int8_t col_begin = col || wrap ? col - 1 : col;
-	int8_t row_end = row < height - 1 || wrap ? row + 1 : row;
-	int8_t col_end = col < width - 1 || wrap ? col + 1 : col;
+	int8_t row_begin = *row || *wrap ? *row - 1 : *row;
+	int8_t col_begin = *col || *wrap ? *col - 1 : *col;
+	int8_t row_end = *row < *height - 1 || *wrap ? *row + 1 : *row;
+	int8_t col_end = *col < *width - 1 || *wrap ? *col + 1 : *col;
 	uint8_t num_live_neighbors = 0;
 	for (int8_t r = row_begin; r <= row_end; r++) {
 
 		// account for wrap around
 		uint8_t neighbor_row;
 		if (r == -1)
-			neighbor_row = height - 1;
-		else if (r == height)
+			neighbor_row = *height - 1;
+		else if (r == *height)
 			neighbor_row = 0;
 		else
 			neighbor_row = (uint8_t)r;
@@ -197,49 +197,49 @@ static uint8_t count_live_neighbors(cell_t** const cells, const uint8_t row, con
 			// account for wrap around
 			uint8_t neighbor_col;
 			if (c == -1)
-				neighbor_col = width - 1;
-			else if (c == width)
+				neighbor_col = *width - 1;
+			else if (c == *width)
 				neighbor_col = 0;
 			else
 				neighbor_col = (uint8_t)c;
 
 			// count neighbor if live
-			cell_t neighbor = (*cells)[width * neighbor_row + neighbor_col];
-			if (neighbor && (neighbor_row != row || neighbor_col != col))
+			cell_t neighbor = (*cells)[*width * neighbor_row + neighbor_col];
+			if (neighbor && (neighbor_row != *row || neighbor_col != *col))
 				num_live_neighbors++;
 		}
 	}
 	return num_live_neighbors;
 }
 
-static cell_t compute_game_of_life(const cell_t cell, const uint8_t num_live_neighbors) {
+static cell_t compute_game_of_life(const cell_t* const cell, const uint8_t* const num_live_neighbors) {
 	// Game of Life rules
-	if (cell && num_live_neighbors < 2)
+	if (*cell && *num_live_neighbors < 2)
 		return 0;
-	if (cell && (num_live_neighbors == 2 || num_live_neighbors == 3))
+	if (*cell && (*num_live_neighbors == 2 || *num_live_neighbors == 3))
 		return 1;
-	if (cell && num_live_neighbors > 3)
+	if (*cell && *num_live_neighbors > 3)
 		return 0;
-	if (!cell && num_live_neighbors == 3)
+	if (!*cell && *num_live_neighbors == 3)
 		return 1;
 	return 0;
 }
 
-static cell_t compute_cell(cell_t** const cells, const uint8_t row, const uint8_t col, const uint8_t width, const uint8_t height, const bool wrap) {
-	cell_t cell = (*cells)[width * row + col];
+static cell_t compute_cell(cell_t** const cells, const uint8_t* const row, const uint8_t* const col, const uint8_t* const width, const uint8_t* const height, const bool* const wrap) {
+	cell_t cell = (*cells)[*width * *row + *col];
 	uint8_t num_live_neighbors = count_live_neighbors(cells, row, col, width, height, wrap);
-	return (cell_t)compute_game_of_life(cell, num_live_neighbors);
+	return (cell_t)compute_game_of_life(&cell, &num_live_neighbors);
 }
 
-static asciigol_result_t compute_cells(cell_t** cells, const uint8_t width, const uint8_t height, const bool wrap) {
-	uint16_t size = width * height;
+static asciigol_result_t compute_cells(cell_t** cells, const uint8_t* const width, const uint8_t* const height, const bool* const wrap) {
+	uint16_t size = *width * *height;
 	cell_t* new_cells = (cell_t*)malloc(size);
 	bool converged = true;
 	for (uint16_t i = 0; i < size; i++) {
-		uint8_t row = (uint8_t)(i / width);
-		uint8_t col = (uint8_t)(i % width);
+		uint8_t row = (uint8_t)(i / *width);
+		uint8_t col = (uint8_t)(i % *width);
 		cell_t cell = (*cells)[i];
-		cell_t new_cell = compute_cell(cells, row, col, width, height, wrap);
+		cell_t new_cell = compute_cell(cells, &row, &col, width, height, wrap);
 		if (cell != new_cell)
 			converged = false;
 		new_cells[i] = new_cell;
@@ -249,14 +249,14 @@ static asciigol_result_t compute_cells(cell_t** cells, const uint8_t width, cons
 	return converged ? ASCIIGOL_CONVERGED : ASCIIGOL_OK;
 }
 
-static void render_cells(cell_t** const cells, const uint8_t width, const uint8_t height, const char live_char, const char dead_char) {
-	uint16_t size = width * height;
+static void render_cells(cell_t** const cells, const uint8_t* const width, const uint8_t* const height, const char* const live_char, const char* const dead_char) {
+	uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
 		const char character = (*cells)[i] ?
-				(live_char ? live_char : DEFAULT_LIVE_CHAR) :
-				(dead_char ? dead_char : DEFAULT_DEAD_CHAR);
+				(*live_char ? *live_char : DEFAULT_LIVE_CHAR) :
+				(*dead_char ? *dead_char : DEFAULT_DEAD_CHAR);
 		putchar(character);
-		if (i % width == width - 1)
+		if (i % *width == *width - 1)
 			putchar('\n');
 	}
 }
@@ -269,9 +269,9 @@ asciigol_result_t asciigol(asciigol_args_t args) {
 	clear_screen();
 	while (result != ASCIIGOL_CONVERGED) {
 		reset_cursor();
-		render_cells(&cells, args.width, args.height, args.live_char, args.dead_char);
-		result = compute_cells(&cells, args.width, args.height, args.wrap);
-		wait(args.delay);
+		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char);
+		result = compute_cells(&cells, &args.width, &args.height, &args.wrap);
+		wait(&args.delay);
 	}
 	if (cells) {
 		free(cells);
