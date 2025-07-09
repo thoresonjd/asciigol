@@ -151,14 +151,16 @@ static void print_asciigol_result(const asciigol_result_t* const result) {
 	}
 }
 
+bool is_asciigol_success(const asciigol_result_t* const result) {
+	return *result == ASCIIGOL_OK || *result == ASCIIGOL_CONVERGED;
+}
+
 int main(int argc, char** argv) {
 	asciigol_args_t args = { 0 };
 	if (!parse_args(&args, &argc, argv))
 		return EXIT_FAILURE;
 	asciigol_result_t result = asciigol(args);
 	print_asciigol_result(&result);
-	if (result != ASCIIGOL_OK || result != ASCIIGOL_CONVERGED)
-		return EXIT_FAILURE;
-	return EXIT_SUCCESS;
+	return is_asciigol_success(&result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
