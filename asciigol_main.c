@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file asciigol_main.c
  * @brief Conway's Game of Life animated as ASCII in the terminal.
  * @author Justin Thoreson
  * @date 2025

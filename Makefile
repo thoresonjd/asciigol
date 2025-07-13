@@ -13,7 +13,7 @@ PROGRAMS = $(ASCIIGOL) $(CONFIG_GEN)
 
 all: $(PROGRAMS)
 
-$(ASCIIGOL): main.c $(ASCIIGOL).c
+$(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c
 	$(C) $(C_FLAGS) $^ -o $@
 
 $(CONFIG_GEN): $(CONFIG_GEN).c
