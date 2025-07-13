@@ -1,6 +1,6 @@
 /**
- * @file config_gen.c
- * @brief Configuration file generator for ASCII Conway's Game of Life (asciigol).
+ * @file asciigolgen.c
+ * @brief Configuration file generator for asciigol.
  * @author Justin Thoreson
  * @date 2025
  */
@@ -15,11 +15,11 @@
 #include <unistd.h>
 
 typedef enum {
-	CONFIG_GEN_OK,
-	CONFIG_GEN_DONE,
-	CONFIG_GEN_INVAL,
-	CONFIG_GEN_FAIL
-} config_gen_result_t;
+	ASCIIGOLGEN_OK,
+	ASCIIGOLGEN_DONE,
+	ASCIIGOLGEN_INVAL,
+	ASCIIGOLGEN_FAIL
+} asciigolgen_result_t;
 
 typedef char cell_t;
 typedef char direction_t;
@@ -31,28 +31,28 @@ static const direction_t DOWN = 'B';
 static const direction_t RIGHT = 'C';
 static const direction_t LEFT = 'D';
 static const char QUIT = 'q';
-static const char* RUN_USAGE = "Usage: ./config_gen <filename> <width> <height>";
+static const char* RUN_USAGE = "Usage: ./asciigolgen <filename> <width> <height>";
 static const char* MODIFY_USAGE = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
 
 static struct termios orig_termios;
 
-static config_gen_result_t init_terminal() {
+static asciigolgen_result_t init_terminal() {
 	struct termios current_termios;
 	if (tcgetattr(STDIN_FILENO, &orig_termios))
-		return CONFIG_GEN_FAIL;
+		return ASCIIGOLGEN_FAIL;
 	current_termios = orig_termios;
 	current_termios.c_lflag &= ~(ICANON | ECHO);
 	if (tcsetattr(STDIN_FILENO, TCSANOW, &current_termios))
-		return CONFIG_GEN_FAIL;
+		return ASCIIGOLGEN_FAIL;
 	if (fflush(stdout))
-		return CONFIG_GEN_FAIL;
-	return CONFIG_GEN_OK;
+		return ASCIIGOLGEN_FAIL;
+	return ASCIIGOLGEN_OK;
 }
 
-static config_gen_result_t reset_terminal() {
+static asciigolgen_result_t reset_terminal() {
 	if (tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios))
-		return CONFIG_GEN_FAIL;
-	return CONFIG_GEN_OK;
+		return ASCIIGOLGEN_FAIL;
+	return ASCIIGOLGEN_OK;
 }
 
 static void clear_screen() {
@@ -63,30 +63,30 @@ static void reset_cursor() {
 	printf("\x1b[H");
 }
 
-static config_gen_result_t init_state(
+static asciigolgen_result_t init_state(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* const height
 ) {
 	if (!width || !height)
-		return CONFIG_GEN_INVAL;
+		return ASCIIGOLGEN_INVAL;
 	const uint16_t size = *width * *height;
 	*state = (cell_t*)malloc(size);
 	if (!*state)
-		return CONFIG_GEN_FAIL;
+		return ASCIIGOLGEN_FAIL;
 	for (uint16_t i = 0; i < size; i++)
 		(*state)[i] = DEAD_CELL;
-	return CONFIG_GEN_OK;
+	return ASCIIGOLGEN_OK;
 }
 
-static config_gen_result_t print_state(
+static asciigolgen_result_t print_state(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* height,
 	const uint16_t* const highlight_idx
 ) {
 	if (!state || !width || !height || !highlight_idx)
-		return CONFIG_GEN_INVAL;
+		return ASCIIGOLGEN_INVAL;
 	const uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
 		if (i == *highlight_idx)
@@ -97,22 +97,22 @@ static config_gen_result_t print_state(
 			putchar('\n');
 	}
 	printf("\n%s\n", MODIFY_USAGE);
-	return CONFIG_GEN_OK;
+	return ASCIIGOLGEN_OK;
 }
 
-static config_gen_result_t process_input(
+static asciigolgen_result_t process_input(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* height,
 	uint16_t* const highlight_idx
 ) {
 	if (!state || !width || !height || !highlight_idx)
-		return CONFIG_GEN_INVAL;
+		return ASCIIGOLGEN_INVAL;
 	char c;
 	if (read(STDIN_FILENO, &c, 1) <= 0)
-		return CONFIG_GEN_FAIL;
+		return ASCIIGOLGEN_FAIL;
 	if (c == QUIT)
-		return CONFIG_GEN_DONE;
+		return ASCIIGOLGEN_DONE;
 	else if (c == LIVE_CELL || c == DEAD_CELL)
 		(*state)[*highlight_idx] = c;
 	else if (c == '\x1b') { // ANSI escape code
@@ -128,41 +128,41 @@ static config_gen_result_t process_input(
 		else if (value == LEFT && *highlight_idx > 0)
 			(*highlight_idx)--;
 	}
-	return CONFIG_GEN_OK;
+	return ASCIIGOLGEN_OK;
 }
 
-static config_gen_result_t modify_state(
+static asciigolgen_result_t modify_state(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* height
 ) {
 	if (!state || !width || !height)
-		return CONFIG_GEN_INVAL;
+		return ASCIIGOLGEN_INVAL;
 	uint16_t highlight_idx = 0;
-	config_gen_result_t result = CONFIG_GEN_OK;
+	asciigolgen_result_t result = ASCIIGOLGEN_OK;
 	clear_screen();
 	do {
 		reset_cursor();
 		result = print_state(state, width, height, &highlight_idx);
-		if (result != CONFIG_GEN_OK)
+		if (result != ASCIIGOLGEN_OK)
 			return result;
 		result = process_input(state, width, height, &highlight_idx);
-	} while (result == CONFIG_GEN_OK);
+	} while (result == ASCIIGOLGEN_OK);
 	return result;
 }
 
 
-static config_gen_result_t write_config(
+static asciigolgen_result_t write_config(
 	char* const filename,
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* const height
 ) {
 	if (!filename || !state || !width || !height)
-		return CONFIG_GEN_INVAL;
+		return ASCIIGOLGEN_INVAL;
 	FILE* file = fopen(filename, "w");
 	if (!file)
-		return CONFIG_GEN_FAIL;
+		return ASCIIGOLGEN_FAIL;
 	const char HEADER[] = "asciigol\n";
 	const size_t HEADER_SIZE = sizeof(HEADER) - 1;
 	fwrite(HEADER, HEADER_SIZE, 1, file);
@@ -174,39 +174,39 @@ static config_gen_result_t write_config(
 			fputc('\n', file);
 	}
 	fclose(file);
-	return CONFIG_GEN_OK;
+	return ASCIIGOLGEN_OK;
 }
 
-config_gen_result_t config_gen(
+asciigolgen_result_t asciigolgen(
 	char* const filename,
 	const uint8_t* const width,
 	const uint8_t* const height
 ) {
 	if (!filename || !width || !height)
-		return CONFIG_GEN_INVAL;
+		return ASCIIGOLGEN_INVAL;
 	cell_t* state = NULL;
-	config_gen_result_t result = CONFIG_GEN_OK;
+	asciigolgen_result_t result = ASCIIGOLGEN_OK;
 	result = init_state(&state, width, height);
-	if (result != CONFIG_GEN_OK) {
+	if (result != ASCIIGOLGEN_OK) {
 		printf("Failed to initialize state - result: %d\n", result);
 		goto EXIT;
 	}
 	result = init_terminal();
-	if (result != CONFIG_GEN_OK) {
+	if (result != ASCIIGOLGEN_OK) {
 		printf("Failed to initialize terminal - result: %d\n", result);
 		goto EXIT;
 	}
 	result = modify_state(&state, width, height);
-	if (result != CONFIG_GEN_OK && result != CONFIG_GEN_DONE) {
+	if (result != ASCIIGOLGEN_OK && result != ASCIIGOLGEN_DONE) {
 		printf("Failed to mofify state - result: %d\n", result);
 		goto EXIT;
 	}
 	result = write_config(filename, &state, width, height);
-	if (result != CONFIG_GEN_OK)
+	if (result != ASCIIGOLGEN_OK)
 		printf("Failed to write config to file %s - result: %d\n", filename, result);
 EXIT:
 	result = reset_terminal();
-	if (result != CONFIG_GEN_OK)
+	if (result != ASCIIGOLGEN_OK)
 		printf("Failed to reset terminal - result: %d\n", result);
 	if (state)
 		free(state);
@@ -227,8 +227,8 @@ int main(int argc, char** argv) {
 		printf("Invalid height: %s\n", argv[3]); 
 		return EXIT_FAILURE;
 	}
-	config_gen_result_t result = config_gen(argv[1], &width, &height);
-	if (result != CONFIG_GEN_OK && result != CONFIG_GEN_DONE)
+	asciigolgen_result_t result = asciigolgen(argv[1], &width, &height);
+	if (result != ASCIIGOLGEN_OK && result != ASCIIGOLGEN_DONE)
 		return EXIT_FAILURE;
 	return EXIT_SUCCESS;
 }

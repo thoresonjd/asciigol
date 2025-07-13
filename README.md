@@ -91,12 +91,12 @@ An asciigol configuration file generator is provided and also runs in the termin
 
 To build, run
 ```
-make config_gen
+make asciigolgen
 ```
 
 To execute, run
 ```
-./config_gen <filename> <width> <height>
+./asciigolgen <filename> <width> <height>
 ```
 
 The program will prompt you with an initial game state of all zeroes (0) with the dimensions of `<width>` and `<height>`. The cells of this initial state can be modified through the terminal by moving between them with the arrow keys (up, down, right, left) and replacing them with `1` or `0`. When finished, press `q` to quit, and the final configuration will be written to the file specified by `<filename>`.

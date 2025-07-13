@@ -1,4 +1,4 @@
 asciigol
-config_gen
+asciigolgen
 *.o
 *.swp

@@ -8,18 +8,19 @@
 C = gcc
 C_FLAGS = -std=gnu11 -Wall -Werror -pedantic -ggdb -O0
 ASCIIGOL = asciigol
-CONFIG_GEN = config_gen
-PROGRAMS = $(ASCIIGOL) $(CONFIG_GEN)
+ASCIIGOLGEN = asciigolgen
+PARSING = parsing
+PROGRAMS = $(ASCIIGOL) $(ASCIIGOLGEN)
 
 all: $(PROGRAMS)
 
-$(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c parsing.o
+$(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c $(PARSING).o
 	$(C) $(C_FLAGS) $^ -o $@
 
-$(CONFIG_GEN): $(CONFIG_GEN).c parsing.o
+$(ASCIIGOLGEN): $(ASCIIGOLGEN).c $(PARSING).o
 	$(C) $(C_FLAGS) $^ -o $@
 
-parsing.o: parsing.c
+$(PARSING).o: $(PARSING).c
 	$(C) $(C_FLAGS) $< -c -o $@
 
 .PHONY: clean
