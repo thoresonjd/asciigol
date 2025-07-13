@@ -5,6 +5,7 @@
  * @date 2025
  */
 
+#include "parsing.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -34,18 +35,6 @@ static const char* RUN_USAGE = "Usage: ./config_gen <filename> <width> <height>"
 static const char* MODIFY_USAGE = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
 
 static struct termios orig_termios;
-
-static bool parse_uint8(char* const arg, uint8_t* const value) {
-	if (!arg || !value)
-		return false;
-	int64_t temp_value;
-	if (!sscanf(arg, "%ld", &temp_value))
-		return false;
-	if (temp_value < 0 || temp_value > UINT8_MAX)
-		return false;
-	*value = (uint8_t)temp_value;
-	return true;
-}
 
 static config_gen_result_t init_terminal() {
 	struct termios current_termios;

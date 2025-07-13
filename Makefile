@@ -13,14 +13,17 @@ PROGRAMS = $(ASCIIGOL) $(CONFIG_GEN)
 
 all: $(PROGRAMS)
 
-$(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c
+$(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c parsing.o
 	$(C) $(C_FLAGS) $^ -o $@
 
-$(CONFIG_GEN): $(CONFIG_GEN).c
-	$(C) $(C_FLAGS) $< -o $@
+$(CONFIG_GEN): $(CONFIG_GEN).c parsing.o
+	$(C) $(C_FLAGS) $^ -o $@
+
+parsing.o: parsing.c
+	$(C) $(C_FLAGS) $< -c -o $@
 
 .PHONY: clean
 
 clean:
-	rm -f $(PROGRAMS)
+	rm -f *.o $(PROGRAMS)
 	
