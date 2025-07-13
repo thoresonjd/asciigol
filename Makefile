@@ -17,7 +17,7 @@ all: $(PROGRAMS)
 $(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c $(PARSING).o
 	$(C) $(C_FLAGS) $^ -o $@
 
-$(ASCIIGOLGEN): $(ASCIIGOLGEN).c $(PARSING).o
+$(ASCIIGOLGEN): $(ASCIIGOLGEN)_main.c $(ASCIIGOLGEN).c $(PARSING).o
 	$(C) $(C_FLAGS) $^ -o $@
 
 $(PARSING).o: $(PARSING).c

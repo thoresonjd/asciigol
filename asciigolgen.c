@@ -5,7 +5,7 @@
  * @date 2025
  */
 
-#include "parsing.h"
+#include "asciigolgen.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -13,13 +13,6 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
-
-typedef enum {
-	ASCIIGOLGEN_OK,
-	ASCIIGOLGEN_DONE,
-	ASCIIGOLGEN_INVAL,
-	ASCIIGOLGEN_FAIL
-} asciigolgen_result_t;
 
 typedef char cell_t;
 typedef char direction_t;
@@ -31,8 +24,7 @@ static const direction_t DOWN = 'B';
 static const direction_t RIGHT = 'C';
 static const direction_t LEFT = 'D';
 static const char QUIT = 'q';
-static const char* RUN_USAGE = "Usage: ./asciigolgen <filename> <width> <height>";
-static const char* MODIFY_USAGE = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
+static const char* USAGE = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
 
 static struct termios orig_termios;
 
@@ -96,7 +88,7 @@ static asciigolgen_result_t print_state(
 		if (i % *width == *width - 1)
 			putchar('\n');
 	}
-	printf("\n%s\n", MODIFY_USAGE);
+	printf("\n%s\n", USAGE);
 	return ASCIIGOLGEN_OK;
 }
 
@@ -213,22 +205,3 @@ EXIT:
 	return result;
 }
 
-int main(int argc, char** argv) {
-	if (argc != 4) {
-		printf("%s\n", RUN_USAGE);
-		return EXIT_FAILURE;
-	}
-	uint8_t width, height;
-	if (!parse_uint8(argv[2], &width)) {
-		printf("Invalid width: %s\n", argv[2]); 
-		return EXIT_FAILURE;
-	}
-	if (!parse_uint8(argv[3], &height)) {
-		printf("Invalid height: %s\n", argv[3]); 
-		return EXIT_FAILURE;
-	}
-	asciigolgen_result_t result = asciigolgen(argv[1], &width, &height);
-	if (result != ASCIIGOLGEN_OK && result != ASCIIGOLGEN_DONE)
-		return EXIT_FAILURE;
-	return EXIT_SUCCESS;
-}
