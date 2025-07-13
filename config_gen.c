@@ -5,8 +5,6 @@
  * @date 2025
  */
 
-// TODO: cleanup
- 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -15,8 +13,23 @@
 #include <termios.h>
 #include <unistd.h>
 
-typedef char cell_t;
+typedef enum {
+	CONFIG_GEN_OK,
+	CONFIG_GEN_DONE,
+	CONFIG_GEN_INVAL,
+	CONFIG_GEN_FAIL
+} config_gen_result_t;
 
+typedef char cell_t;
+typedef char direction_t;
+
+static const cell_t LIVE_CELL = '1';
+static const cell_t DEAD_CELL = '0';
+static const direction_t UP = 'A';
+static const direction_t DOWN = 'B';
+static const direction_t RIGHT = 'C';
+static const direction_t LEFT = 'D';
+static const char QUIT = 'q';
 static const char* RUN_USAGE = "Usage: ./config_gen <filename> <width> <height>";
 static const char* MODIFY_USAGE = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
 
@@ -34,19 +47,23 @@ static bool parse_uint8(char* const arg, uint8_t* const value) {
 	return true;
 }
 
-static bool init_terminal() {
+static config_gen_result_t init_terminal() {
 	struct termios current_termios;
 	if (tcgetattr(STDIN_FILENO, &orig_termios))
-		return false;
+		return CONFIG_GEN_FAIL;
 	current_termios = orig_termios;
 	current_termios.c_lflag &= ~(ICANON | ECHO);
 	if (tcsetattr(STDIN_FILENO, TCSANOW, &current_termios))
-		return false;
-	return !fflush(stdout);
+		return CONFIG_GEN_FAIL;
+	if (fflush(stdout))
+		return CONFIG_GEN_FAIL;
+	return CONFIG_GEN_OK;
 }
 
-static bool reset_terminal() {
-	return !tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+static config_gen_result_t reset_terminal() {
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios))
+		return CONFIG_GEN_FAIL;
+	return CONFIG_GEN_OK;
 }
 
 static void clear_screen() {
@@ -57,26 +74,30 @@ static void reset_cursor() {
 	printf("\x1b[H");
 }
 
-static bool init_state(
+static config_gen_result_t init_state(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* const height
 ) {
 	if (!width || !height)
-		return false;
+		return CONFIG_GEN_INVAL;
 	const uint16_t size = *width * *height;
-	*state = (cell_t*)malloc(size * sizeof(cell_t));
+	*state = (cell_t*)malloc(size);
+	if (!*state)
+		return CONFIG_GEN_FAIL;
 	for (uint16_t i = 0; i < size; i++)
-		(*state)[i] = '0';
-	return *state;
+		(*state)[i] = DEAD_CELL;
+	return CONFIG_GEN_OK;
 }
 
-static void print_state(
+static config_gen_result_t print_state(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* height,
 	const uint16_t* const highlight_idx
 ) {
+	if (!state || !width || !height || !highlight_idx)
+		return CONFIG_GEN_INVAL;
 	const uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
 		if (i == *highlight_idx)
@@ -87,75 +108,72 @@ static void print_state(
 			putchar('\n');
 	}
 	printf("\n%s\n", MODIFY_USAGE);
+	return CONFIG_GEN_OK;
 }
 
-static bool process_input(
+static config_gen_result_t process_input(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* height,
 	uint16_t* const highlight_idx
 ) {
 	if (!state || !width || !height || !highlight_idx)
-		return false;
+		return CONFIG_GEN_INVAL;
 	char c;
 	if (read(STDIN_FILENO, &c, 1) <= 0)
-		return false;
-	if (c == 'q')
-		return false;
-	if (c == '0' || c == '1') // valid cell states
+		return CONFIG_GEN_FAIL;
+	if (c == QUIT)
+		return CONFIG_GEN_DONE;
+	else if (c == LIVE_CELL || c == DEAD_CELL)
 		(*state)[*highlight_idx] = c;
 	else if (c == '\x1b') { // ANSI escape code
 		getchar(); // skip [
 		char value = getchar();
 		const uint16_t size = *width * *height;
-		switch (value) { 
-			case 'A': // up arrow 
-				if (*highlight_idx >= *width)
-					(*highlight_idx) -= *width;
-				break;
-			case 'B': // down arrow
-				if (*highlight_idx < size)
-					(*highlight_idx) += *width;
-				break;
-			case 'C': // right arrow
-				if (*highlight_idx < size - 1)
-					(*highlight_idx)++;
-				break;
-			case 'D': // left arrow
-				if (*highlight_idx > 0)
-					(*highlight_idx)--;
-				break;
-		}		
+		if (value == UP && *highlight_idx >= *width)
+			(*highlight_idx) -= *width;
+		else if (value == DOWN && *highlight_idx < size)
+			(*highlight_idx) += *width;
+		else if (value == RIGHT && *highlight_idx < size - 1)
+			(*highlight_idx)++;
+		else if (value == LEFT && *highlight_idx > 0)
+			(*highlight_idx)--;
 	}
-	return true;
+	return CONFIG_GEN_OK;
 }
 
-static bool modify_state(
+static config_gen_result_t modify_state(
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* height
 ) {
 	if (!state || !width || !height)
-		return false;
+		return CONFIG_GEN_INVAL;
 	uint16_t highlight_idx = 0;
+	config_gen_result_t result = CONFIG_GEN_OK;
 	clear_screen();
 	do {
 		reset_cursor();
-		print_state(state, width, height, &highlight_idx);
-	} while (process_input(state, width, height, &highlight_idx));
-	return true;
+		result = print_state(state, width, height, &highlight_idx);
+		if (result != CONFIG_GEN_OK)
+			return result;
+		result = process_input(state, width, height, &highlight_idx);
+	} while (result == CONFIG_GEN_OK);
+	return result;
 }
 
 
-static bool write_config(
+static config_gen_result_t write_config(
 	char* const filename,
 	cell_t** const state,
 	const uint8_t* const width,
 	const uint8_t* const height
 ) {
+	if (!filename || !state || !width || !height)
+		return CONFIG_GEN_INVAL;
 	FILE* file = fopen(filename, "w");
 	if (!file)
-		return false;
+		return CONFIG_GEN_FAIL;
 	const char HEADER[] = "asciigol\n";
 	const size_t HEADER_SIZE = sizeof(HEADER) - 1;
 	fwrite(HEADER, HEADER_SIZE, 1, file);
@@ -167,7 +185,43 @@ static bool write_config(
 			fputc('\n', file);
 	}
 	fclose(file);
-	return true;
+	return CONFIG_GEN_OK;
+}
+
+config_gen_result_t config_gen(
+	char* const filename,
+	const uint8_t* const width,
+	const uint8_t* const height
+) {
+	if (!filename || !width || !height)
+		return CONFIG_GEN_INVAL;
+	cell_t* state = NULL;
+	config_gen_result_t result = CONFIG_GEN_OK;
+	result = init_state(&state, width, height);
+	if (result != CONFIG_GEN_OK) {
+		printf("Failed to initialize state - result: %d\n", result);
+		goto EXIT;
+	}
+	result = init_terminal();
+	if (result != CONFIG_GEN_OK) {
+		printf("Failed to initialize terminal - result: %d\n", result);
+		goto EXIT;
+	}
+	result = modify_state(&state, width, height);
+	if (result != CONFIG_GEN_OK && result != CONFIG_GEN_DONE) {
+		printf("Failed to mofify state - result: %d\n", result);
+		goto EXIT;
+	}
+	result = write_config(filename, &state, width, height);
+	if (result != CONFIG_GEN_OK)
+		printf("Failed to write config to file %s - result: %d\n", filename, result);
+EXIT:
+	result = reset_terminal();
+	if (result != CONFIG_GEN_OK)
+		printf("Failed to reset terminal - result: %d\n", result);
+	if (state)
+		free(state);
+	return result;
 }
 
 int main(int argc, char** argv) {
@@ -184,22 +238,8 @@ int main(int argc, char** argv) {
 		printf("Invalid height: %s\n", argv[3]); 
 		return EXIT_FAILURE;
 	}
-	cell_t* state = NULL;
-	if (!init_state(&state, &width, &height)) {
-		printf("Failed to initialize state\n");
-		goto EXIT;
-	}
-	if (!init_terminal()) {
-		printf("Failed to initialize terminal\n");
-		goto EXIT;
-	}
-	(void)modify_state(&state, &width, &height);
-	if (!write_config(argv[1], &state, &width, &height))
-		printf("Failed to write config to file %s\n", argv[1]);
-EXIT:
-	if (!reset_terminal())
-		printf("Failed to reset terminal\n");
-	if (state)
-		free(state);
+	config_gen_result_t result = config_gen(argv[1], &width, &height);
+	if (result != CONFIG_GEN_OK && result != CONFIG_GEN_DONE)
+		return EXIT_FAILURE;
 	return EXIT_SUCCESS;
 }
