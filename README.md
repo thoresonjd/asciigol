@@ -18,11 +18,7 @@ https://github.com/user-attachments/assets/a69cbad0-ac1d-455a-afe6-f38946959efd
 
 ## Usage
 
-To build the program, run
-```
-make
-```
-or
+To build the asciigol program, run
 ```
 make asciigol
 ```
@@ -57,7 +53,7 @@ In the event that duplicate arguments are provided, only the first instance will
 
 In addition to their default values, `--width` and `--height` also have a current maximum of 250 and 100 respectively. Using 0 for either of the dimensions will result in the program falling back to the default values.
 
-### Configuration Files
+## Configuration Files
 
 As alluded to in the aforementioned table, asciigol supports custom, fixed initial states via configuration files provided via the `--file` parameter.
 
@@ -86,3 +82,21 @@ asciigol
 ```
 
 Sample configuration files, including invalid ones, are located in the `config/` directory.
+
+### Config Generator
+
+An asciigol configuration file generator is provided and also runs in the terminal.
+
+#### Usage
+
+To build, run
+```
+make config_gen
+```
+
+To execute, run
+```
+./config_gen <filename> <width> <height>
+```
+
+The program will prompt you with an initial game state of all zeroes (0) with the dimensions of `<width>` and `<height>`. The cells of this initial state can be modified through the terminal by moving between them with the arrow keys (up, down, right, left) and replacing them with `1` or `0`. When finished, press `q` to quit, and the final configuration will be written to the file specified by `<filename>`.
