@@ -25,36 +25,22 @@ static const char* USAGE =
 	"\t--wrap=true|false  reaching row/column limit will\n"
 	"\t                   wrap around to the other end\n";
 
-static bool parse_arg(asciigol_args_t* const args, char* const arg) {
-	const char WIDTH_PARAM[] = "--width=";
-	const char HEIGHT_PARAM[] = "--height=";
-	const char DELAY_PARAM[] = "--delay=";
-	const char LIVE_CHAR_PARAM[] = "--live-char=";
-	const char DEAD_CHAR_PARAM[] = "--dead-char=";
-	const char FILE_PARAM[] = "--file=";
-	const char WRAP_PARAM[] = "--wrap=";
-	const size_t WIDTH_PARAM_SIZE = sizeof(WIDTH_PARAM) - 1;
-	const size_t HEIGHT_PARAM_SIZE = sizeof(HEIGHT_PARAM) - 1;
-	const size_t DELAY_PARAM_SIZE = sizeof(DELAY_PARAM) - 1;
-	const size_t LIVE_CHAR_PARAM_SIZE = sizeof(LIVE_CHAR_PARAM) - 1;
-	const size_t DEAD_CHAR_PARAM_SIZE = sizeof(DEAD_CHAR_PARAM) - 1;
-	const size_t FILE_PARAM_SIZE = sizeof(FILE_PARAM) - 1;
-	const size_t WRAP_PARAM_SIZE= sizeof(WRAP_PARAM) - 1;
-	if (!strncmp(WIDTH_PARAM, arg, WIDTH_PARAM_SIZE) && !args->width)
-		return parse_uint8(arg + WIDTH_PARAM_SIZE, &args->width);
-	if (!strncmp(HEIGHT_PARAM, arg, HEIGHT_PARAM_SIZE) && !args->height)
-		return parse_uint8(arg + HEIGHT_PARAM_SIZE, &args->height);
-	if (!strncmp(DELAY_PARAM, arg, DELAY_PARAM_SIZE) && !args->delay)
-		return parse_uint16(arg + DELAY_PARAM_SIZE, &args->delay);
-	if (!strncmp(LIVE_CHAR_PARAM, arg, LIVE_CHAR_PARAM_SIZE) && !args->live_char)
-		return parse_char(arg + LIVE_CHAR_PARAM_SIZE, &args->live_char);
-	if (!strncmp(DEAD_CHAR_PARAM, arg, DEAD_CHAR_PARAM_SIZE) && !args->dead_char)
-		return parse_char(arg + DEAD_CHAR_PARAM_SIZE, &args->dead_char);
-	if (!strncmp(FILE_PARAM, arg, FILE_PARAM_SIZE) && !args->filename)
-		return parse_string(arg + FILE_PARAM_SIZE, &args->filename);
-	if (!strncmp(WRAP_PARAM, arg, WRAP_PARAM_SIZE) && !args->wrap)
-		return parse_bool(arg + WRAP_PARAM_SIZE, &args->wrap);
-	return true;
+static bool parse_arg(asciigol_args_t* const args, char* arg) {
+	if (!args->width && skip_prefix(&arg, "--width="))
+		return parse_uint8(arg, &args->width);
+	if (!args->height && skip_prefix(&arg, "--height="))
+		return parse_uint8(arg, &args->height);
+	if (!args->delay && skip_prefix(&arg, "--delay="))
+		return parse_uint16(arg, &args->delay);
+	if (!args->live_char && skip_prefix(&arg, "--live-char="))
+		return parse_char(arg, &args->live_char);
+	if (!args->dead_char && skip_prefix(&arg, "--dead-char="))
+		return parse_char(arg, &args->dead_char);
+	if (!args->filename && skip_prefix(&arg, "--file="))
+		return parse_string(arg, &args->filename);
+	if (!args->wrap && skip_prefix(&arg, "--wrap="))
+		return parse_bool(arg, &args->wrap);
+	return false;
 }
 
 static bool parse_args(

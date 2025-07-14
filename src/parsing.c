@@ -9,7 +9,15 @@
 #include <stdio.h>
 #include <string.h>
 
-bool parse_uint8(char* const arg, uint8_t* value) {
+bool skip_prefix(char** string, const char* const prefix) {
+	const size_t prefix_len = strlen(prefix);
+	if (strncmp(*string, prefix, prefix_len))
+		return false;
+	*string += prefix_len;
+	return true;
+}
+
+bool parse_uint8(const char* const arg, uint8_t* value) {
 	if (!arg || !value)
 		return false;
 	int64_t temp_value;
@@ -21,7 +29,7 @@ bool parse_uint8(char* const arg, uint8_t* value) {
 	return true;
 }
 
-bool parse_uint16(char* const arg, uint16_t* value) {
+bool parse_uint16(const char* const arg, uint16_t* value) {
 	if (!arg || !value)
 		return false;
 	int64_t temp_value;
@@ -33,7 +41,7 @@ bool parse_uint16(char* const arg, uint16_t* value) {
 	return true;
 }
 
-bool parse_char(char* const arg, char* character) {
+bool parse_char(const char* const arg, char* character) {
 	if (!arg || !character)
 		return false;
 	if (!sscanf(arg, "%c", character))
@@ -48,15 +56,12 @@ bool parse_string(char* const arg, char** string) {
 	return true;
 }
 
-bool parse_bool(char* const arg, bool* boolean) {
+bool parse_bool(const char* const arg, bool* boolean) {
 	if (!arg || !boolean)
 		return false;
-	char* temp_string;
-	if (!parse_string(arg, &temp_string))
-		return false;
-	if (!strcmp(temp_string, "true"))
+	if (!strcmp(arg, "true"))
 		(*boolean) = true;
-	else if (!strcmp(temp_string, "false"))
+	else if (!strcmp(arg, "false"))
 		(*boolean) = false;
 	else
 		return false;
