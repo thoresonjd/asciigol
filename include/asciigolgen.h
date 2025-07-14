@@ -5,6 +5,10 @@
  * @date 2025
  */
 
+#pragma once
+#ifndef ASCIIGOLGEN_H
+#define ASCIIGOLGEN_H
+
 #include <stdint.h>
 
 /**
@@ -32,4 +36,6 @@ typedef enum {
  * @return An enum denoting the asciigolgen result code.
  */
 asciigolgen_result_t asciigolgen(asciigolgen_args_t args);
+
+#endif // ASCIIGOLGEN_H
 
