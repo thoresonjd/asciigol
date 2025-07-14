@@ -8,6 +8,15 @@
 #include <stdint.h>
 
 /**
+ * @brief Arguments to be given to the asciigolgen program.
+ */
+typedef struct {
+	uint8_t width;
+	uint8_t height;
+	char* filename;
+} asciigolgen_args_t;
+
+/**
  * @brief Result codes returned by asciigolgen.
  */
 typedef enum {
@@ -19,12 +28,8 @@ typedef enum {
 
 /**
  * @brief Generates an asciigol configuration file.
- * @param[in] filename The name of the file to write the config to.
- * @param[in] width The width of the asciigol grid.
- * @param[in] height The height of the asciigol grid.
+ * @param[in] args A structure of arguments to configure asciigolgen with.
  * @return An enum denoting the asciigolgen result code.
  */
-asciigolgen_result_t asciigolgen(
-	char* const filename,
-	const uint8_t* const width,
-	const uint8_t* const height);
+asciigolgen_result_t asciigolgen(asciigolgen_args_t args);
+

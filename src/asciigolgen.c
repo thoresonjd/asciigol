@@ -24,27 +24,22 @@ static const direction_t DOWN = 'B';
 static const direction_t RIGHT = 'C';
 static const direction_t LEFT = 'D';
 static const char QUIT = 'q';
-static const char* USAGE = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
+static const char* CONTROLS = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
 
-static struct termios orig_termios;
-
-static asciigolgen_result_t init_terminal() {
-	struct termios current_termios;
-	if (tcgetattr(STDIN_FILENO, &orig_termios))
-		return ASCIIGOLGEN_FAIL;
-	current_termios = orig_termios;
-	current_termios.c_lflag &= ~(ICANON | ECHO);
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &current_termios))
-		return ASCIIGOLGEN_FAIL;
-	if (fflush(stdout))
-		return ASCIIGOLGEN_FAIL;
-	return ASCIIGOLGEN_OK;
+static struct termios get_terminal() {
+	struct termios terminal;
+	tcgetattr(STDIN_FILENO, &terminal);
+	return terminal;
 }
 
-static asciigolgen_result_t reset_terminal() {
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios))
-		return ASCIIGOLGEN_FAIL;
-	return ASCIIGOLGEN_OK;
+static void set_terminal(const struct termios* terminal) {
+	tcsetattr(STDIN_FILENO, TCSANOW, terminal);
+	fflush(stdout);
+}
+
+static struct termios terminal_noncanon(struct termios terminal) {
+	terminal.c_lflag &= ~(ICANON | ECHO);
+	return terminal;
 }
 
 static void clear_screen() {
@@ -88,7 +83,7 @@ static asciigolgen_result_t print_state(
 		if (i % *width == *width - 1)
 			putchar('\n');
 	}
-	printf("\n%s\n", USAGE);
+	printf("\n%s\n", CONTROLS);
 	return ASCIIGOLGEN_OK;
 }
 
@@ -169,39 +164,22 @@ static asciigolgen_result_t write_config(
 	return ASCIIGOLGEN_OK;
 }
 
-asciigolgen_result_t asciigolgen(
-	char* const filename,
-	const uint8_t* const width,
-	const uint8_t* const height
-) {
-	if (!filename || !width || !height)
-		return ASCIIGOLGEN_INVAL;
+asciigolgen_result_t asciigolgen(asciigolgen_args_t args) {
 	cell_t* state = NULL;
-	asciigolgen_result_t result = ASCIIGOLGEN_OK;
-	result = init_state(&state, width, height);
-	if (result != ASCIIGOLGEN_OK) {
-		printf("Failed to initialize state - result: %d\n", result);
-		goto EXIT;
-	}
-	result = init_terminal();
-	if (result != ASCIIGOLGEN_OK) {
-		printf("Failed to initialize terminal - result: %d\n", result);
-		goto EXIT;
-	}
-	result = modify_state(&state, width, height);
-	if (result != ASCIIGOLGEN_OK && result != ASCIIGOLGEN_DONE) {
-		printf("Failed to mofify state - result: %d\n", result);
-		goto EXIT;
-	}
-	result = write_config(filename, &state, width, height);
+	asciigolgen_result_t result = init_state(&state, &args.width, &args.height);
 	if (result != ASCIIGOLGEN_OK)
-		printf("Failed to write config to file %s - result: %d\n", filename, result);
-EXIT:
-	result = reset_terminal();
-	if (result != ASCIIGOLGEN_OK)
-		printf("Failed to reset terminal - result: %d\n", result);
-	if (state)
+		return result;
+	struct termios orig_terminal = get_terminal();
+	struct termios new_terminal = terminal_noncanon(orig_terminal);
+	set_terminal(&new_terminal);
+	result = modify_state(&state, &args.width, &args.height);
+	if (result == ASCIIGOLGEN_OK || result == ASCIIGOLGEN_DONE)
+		result = write_config(args.filename, &state, &args.width, &args.height);
+	set_terminal(&orig_terminal);
+	if (state) {
 		free(state);
+		state = NULL;
+	}
 	return result;
 }
 
