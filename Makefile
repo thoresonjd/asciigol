@@ -8,6 +8,7 @@
 # Directories
 INCLUDE_DIR = ./include
 SRC_DIR = ./src
+APP_DIR = ./main
 OBJ_DIR = ./obj
 OUT_DIR = ./bin
 BUILD_DIRS = $(OBJ_DIR) $(OUT_DIR)
@@ -32,10 +33,10 @@ clean:
 
 .PHONY: all setup clean
 
-$(ASCIIGOL): $(ASCIIGOL)_main.c $(SRC_DIR)/$(ASCIIGOL).c $(OBJ_DIR)/$(PARSING).o
+$(ASCIIGOL): $(APP_DIR)/$(ASCIIGOL).c $(SRC_DIR)/$(ASCIIGOL).c $(OBJ_DIR)/$(PARSING).o
 	$(C) $(C_FLAGS) $^ -o $(OUT_DIR)/$@
 
-$(ASCIIGOLGEN): $(ASCIIGOLGEN)_main.c $(SRC_DIR)/$(ASCIIGOLGEN).c $(OBJ_DIR)/$(PARSING).o
+$(ASCIIGOLGEN): $(APP_DIR)/$(ASCIIGOLGEN).c $(SRC_DIR)/$(ASCIIGOLGEN).c $(OBJ_DIR)/$(PARSING).o
 	$(C) $(C_FLAGS) $^ -o $(OUT_DIR)/$@
 
 $(OBJ_DIR)/$(PARSING).o: $(SRC_DIR)/$(PARSING).c
