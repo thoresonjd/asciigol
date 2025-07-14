@@ -5,7 +5,7 @@
  * @date 2025
  */
 
-#include "asciigolgen.h"
+#include <asciigolgen.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

@@ -3,28 +3,41 @@
 # Usage:
 # - `make [all]`: Builds all programs
 # - `make asciigol`: Builds the asciigol program
-# - `make config_gen`: Builds the configuration file generator program
+# - `make asciigolgen`: Builds the configuration file generator program
 
-C = gcc
-C_FLAGS = -std=gnu11 -Wall -Werror -pedantic -ggdb -O0
+# Directories
+INCLUDE_DIR = ./include
+SRC_DIR = ./src
+OBJ_DIR = ./obj
+OUT_DIR = ./bin
+BUILD_DIRS = $(OBJ_DIR) $(OUT_DIR)
+
+# Program sources
 ASCIIGOL = asciigol
 ASCIIGOLGEN = asciigolgen
 PARSING = parsing
 PROGRAMS = $(ASCIIGOL) $(ASCIIGOLGEN)
 
-all: $(PROGRAMS)
+# C
+C = gcc
+C_FLAGS = -std=gnu11 -Wall -Werror -pedantic -ggdb -O0 -I$(INCLUDE_DIR)
 
-$(ASCIIGOL): $(ASCIIGOL)_main.c $(ASCIIGOL).c $(PARSING).o
-	$(C) $(C_FLAGS) $^ -o $@
+all: setup $(PROGRAMS)
 
-$(ASCIIGOLGEN): $(ASCIIGOLGEN)_main.c $(ASCIIGOLGEN).c $(PARSING).o
-	$(C) $(C_FLAGS) $^ -o $@
-
-$(PARSING).o: $(PARSING).c
-	$(C) $(C_FLAGS) $< -c -o $@
-
-.PHONY: clean
+setup:
+	mkdir -p $(BUILD_DIRS)
 
 clean:
-	rm -f *.o $(PROGRAMS)
-	
+	rm -rf $(BUILD_DIRS)
+
+.PHONY: all setup clean
+
+$(ASCIIGOL): $(ASCIIGOL)_main.c $(SRC_DIR)/$(ASCIIGOL).c $(OBJ_DIR)/$(PARSING).o
+	$(C) $(C_FLAGS) $^ -o $(OUT_DIR)/$@
+
+$(ASCIIGOLGEN): $(ASCIIGOLGEN)_main.c $(SRC_DIR)/$(ASCIIGOLGEN).c $(OBJ_DIR)/$(PARSING).o
+	$(C) $(C_FLAGS) $^ -o $(OUT_DIR)/$@
+
+$(OBJ_DIR)/$(PARSING).o: $(SRC_DIR)/$(PARSING).c
+	$(C) $(C_FLAGS) $< -c -o $@
+

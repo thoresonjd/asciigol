@@ -5,8 +5,8 @@
  * @date 2025
  */
 
-#include "asciigol.h"
-#include "parsing.h"
+#include <asciigol.h>
+#include <parsing.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -14,7 +14,7 @@
 #include <string.h>
 
 static const char* USAGE =
-	"Usage: ./asciigol [arguments]\n"
+	"Usage: asciigol [arguments]\n"
 	"Parameters:\n"
 	"\t--width=<uint8>    width of grid\n"
 	"\t--height=<uint8>   height of grid\n"

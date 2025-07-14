@@ -5,8 +5,8 @@
  * @date 2025
  */
 
-#include "asciigolgen.h"
-#include "parsing.h"
+#include <asciigolgen.h>
+#include <parsing.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -15,7 +15,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-static const char* USAGE = "Usage: ./asciigolgen <filename> <width> <height>";
+static const char* USAGE = "Usage: asciigolgen <filename> <width> <height>";
 
 int main(int argc, char** argv) {
 	if (argc != 4) {
