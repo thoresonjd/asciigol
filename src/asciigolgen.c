@@ -108,7 +108,7 @@ static asciigolgen_result_t process_input(
 		const uint16_t size = *width * *height;
 		if (value == UP && *highlight_idx >= *width)
 			(*highlight_idx) -= *width;
-		else if (value == DOWN && *highlight_idx < size)
+		else if (value == DOWN && *highlight_idx < size - *width)
 			(*highlight_idx) += *width;
 		else if (value == RIGHT && *highlight_idx < size - 1)
 			(*highlight_idx)++;
