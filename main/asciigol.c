@@ -23,7 +23,7 @@ static const char* USAGE =
 	"\t--dead-char=<char> character representing a dead cell\n"
 	"\t--file=<string>    custom configuration file\n"
 	"\t--wrap=true|false  reaching row/column limit will\n"
-	"\t                   wrap around to the other end\n";
+	"\t                   wrap around to the other end";
 
 static bool parse_arg(asciigol_args_t* const args, char* arg) {
 	if (!args->width && skip_prefix(&arg, "--width="))
@@ -51,7 +51,7 @@ static bool parse_args(
 	for (int i = 1; i < *argc; i++) {
 		char* const arg = argv[i];
 		if (!parse_arg(args, arg)) {
-			printf("Failed to parse: %s\n%s", arg, USAGE);
+			printf("Failed to parse: %s\n%s\n", arg, USAGE);
 			return false;
 		}
 	}
@@ -84,7 +84,7 @@ static void print_asciigol_result(const asciigol_result_t* const result) {
 	}
 }
 
-bool is_asciigol_success(const asciigol_result_t* const result) {
+static bool is_asciigol_success(const asciigol_result_t* const result) {
 	return *result == ASCIIGOL_OK || *result == ASCIIGOL_CONVERGED;
 }
 

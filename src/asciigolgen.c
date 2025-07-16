@@ -150,9 +150,7 @@ static asciigolgen_result_t write_config(
 	FILE* file = fopen(filename, "w");
 	if (!file)
 		return ASCIIGOLGEN_FAIL;
-	const char HEADER[] = "asciigol\n";
-	const size_t HEADER_SIZE = sizeof(HEADER) - 1;
-	fwrite(HEADER, HEADER_SIZE, 1, file);
+	fwrite("asciigol\n", sizeof("asciigol\n") - 1, 1, file);
 	fprintf(file, "%u,%u\n", *width, *height);
 	const uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {

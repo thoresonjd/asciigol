@@ -51,7 +51,7 @@ static bool parse_args(
 	return true;
 }
 
-bool is_asciigolgen_success(const asciigolgen_result_t* const result) {
+static bool is_asciigolgen_success(const asciigolgen_result_t* const result) {
 	return *result == ASCIIGOLGEN_OK || *result == ASCIIGOLGEN_DONE;
 }
 

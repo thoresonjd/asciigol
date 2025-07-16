@@ -259,7 +259,7 @@ static cell_t compute_cell(
 ) {
 	cell_t cell = (*cells)[*width * *row + *col];
 	uint8_t num_live_neighbors = count_live_neighbors(cells, row, col, width, height, wrap);
-	return (cell_t)compute_game_of_life(&cell, &num_live_neighbors);
+	return compute_game_of_life(&cell, &num_live_neighbors);
 }
 
 static asciigol_result_t compute_cells(
