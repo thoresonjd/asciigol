@@ -55,6 +55,26 @@ static bool parse_args(
 	return true;
 }
 
+static void print_asciigolgen_result(const asciigolgen_result_t* const result) {
+	printf("Result: ");
+	switch (*result) {
+		case ASCIIGOLGEN_OK:
+			printf("ASCIIGOLGEN_OK (%d)\n", ASCIIGOLGEN_FAIL);
+			break;
+		case ASCIIGOLGEN_DONE:
+			printf("ASCIIGOLGEN_DONE (%d)\n", ASCIIGOLGEN_DONE);
+			break;
+		case ASCIIGOLGEN_INVAL:
+			printf("ASCIIGOLGEN_INVAL (%d)\n", ASCIIGOLGEN_INVAL);
+			break;
+		case ASCIIGOLGEN_FAIL:
+			printf("ASCIIGOLGEN_FAIL (%d)\n", ASCIIGOLGEN_FAIL);
+			break;
+		default:
+			printf("result not recognized\n");
+	}
+}
+
 static bool is_asciigolgen_success(const asciigolgen_result_t* const result) {
 	return *result == ASCIIGOLGEN_OK || *result == ASCIIGOLGEN_DONE;
 }
@@ -64,6 +84,7 @@ int main(int argc, char** argv) {
 	if (!parse_args(&args, &argc, argv))
 		return EXIT_FAILURE;
 	asciigolgen_result_t result = asciigolgen(args);
+	print_asciigolgen_result(&result);
 	return is_asciigolgen_success(&result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
