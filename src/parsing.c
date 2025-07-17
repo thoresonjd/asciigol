@@ -44,6 +44,8 @@ bool parse_uint16(const char* const arg, uint16_t* value) {
 bool parse_char(const char* const arg, char* character) {
 	if (!arg || !character)
 		return false;
+	if (strlen(arg) != 1)
+		return false;
 	if (!sscanf(arg, "%c", character))
 		return false;
 	return true;
