@@ -43,7 +43,7 @@
    fun:main
 }
 {
-   printf_leak_on_interrupt
+   clear_screen_leak_on_interrupt
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc
