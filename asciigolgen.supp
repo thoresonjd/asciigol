@@ -1,0 +1,27 @@
+{
+   init_state_leak_on_interrupt 
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:init_state
+   fun:asciigolgen
+   fun:main
+}
+{
+   clear_screen_leak_on_interrupt
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_IO_file_doallocate
+   fun:_IO_doallocbuf
+   fun:_IO_file_overflow@@GLIBC_2.2.5
+   fun:_IO_new_file_xsputn
+   fun:_IO_file_xsputn@@GLIBC_2.2.5
+   fun:outstring_func
+   fun:__vfprintf_internal
+   fun:printf
+   fun:clear_screen
+   fun:modify_state
+   fun:asciigolgen
+   fun:main
+}
