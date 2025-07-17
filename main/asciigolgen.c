@@ -20,7 +20,8 @@ static const char* USAGE =
 	"Parameters:\n"
 	"\t--width=<uint8>  width of asciigol grid to configure\n"
 	"\t--height=<uint8> height of asciigol grid to configure\n"
-	"\t--file=<string>  name of configuration file to generate";
+	"\t--file=<string>  name of configuration file to generate\n"
+	"\t--cell=0|1       the cell state to initialize with";
 
 static bool parse_arg(asciigolgen_args_t* const args, char* arg) {
 	if (!args->width && skip_prefix(&arg, "--width="))
@@ -29,6 +30,9 @@ static bool parse_arg(asciigolgen_args_t* const args, char* arg) {
 		return parse_uint8(arg, &args->height);
 	if (!args->filename && skip_prefix(&arg, "--file="))
 		return parse_string(arg, &args->filename);
+	if (!args->cell && skip_prefix(&arg, "--cell="))
+		if (parse_char(arg, &args->cell))
+			return args->cell == '0' || args->cell == '1';
 	return false;
 }
 
@@ -37,7 +41,7 @@ static bool parse_args(
 	const int* const argc,
 	char** const argv
 ) {
-	if (*argc != 4) {
+	if (*argc != 5) {
 		printf("Invalid number of arguments\n%s\n", USAGE);
 		return false;
 	}

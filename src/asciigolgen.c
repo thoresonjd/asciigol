@@ -53,16 +53,19 @@ static void reset_cursor() {
 static asciigolgen_result_t init_state(
 	cell_t** const state,
 	const uint8_t* const width,
-	const uint8_t* const height
+	const uint8_t* const height,
+	const cell_t* const cell
 ) {
-	if (!width || !height)
+	if (!width || !height || !cell)
+		return ASCIIGOLGEN_INVAL;
+	if (*cell != DEAD_CELL && *cell != LIVE_CELL)
 		return ASCIIGOLGEN_INVAL;
 	const uint16_t size = *width * *height;
 	*state = (cell_t*)malloc(size);
 	if (!*state)
 		return ASCIIGOLGEN_FAIL;
 	for (uint16_t i = 0; i < size; i++)
-		(*state)[i] = DEAD_CELL;
+		(*state)[i] = *cell;
 	return ASCIIGOLGEN_OK;
 }
 
@@ -164,7 +167,7 @@ static asciigolgen_result_t write_config(
 
 asciigolgen_result_t asciigolgen(asciigolgen_args_t args) {
 	cell_t* state = NULL;
-	asciigolgen_result_t result = init_state(&state, &args.width, &args.height);
+	asciigolgen_result_t result = init_state(&state, &args.width, &args.height, &args.cell);
 	if (result != ASCIIGOLGEN_OK)
 		return result;
 	struct termios orig_terminal = get_terminal();

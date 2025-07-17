@@ -18,6 +18,7 @@ typedef struct {
 	uint8_t width;
 	uint8_t height;
 	char* filename;
+	char cell;
 } asciigolgen_args_t;
 
 /**
