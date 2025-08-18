@@ -197,12 +197,12 @@ static uint8_t count_live_neighbors(
 	const bool* const wrap
 ) {
 	// get neighbor range; will go out of grid range when wrap is enabled
-	int8_t row_begin = *row || *wrap ? *row - 1 : *row;
-	int8_t col_begin = *col || *wrap ? *col - 1 : *col;
-	int8_t row_end = *row < *height - 1 || *wrap ? *row + 1 : *row;
-	int8_t col_end = *col < *width - 1 || *wrap ? *col + 1 : *col;
+	int16_t row_begin = *row || *wrap ? *row - 1 : *row;
+	int16_t col_begin = *col || *wrap ? *col - 1 : *col;
+	int16_t row_end = *row < *height - 1 || *wrap ? *row + 1 : *row;
+	int16_t col_end = *col < *width - 1 || *wrap ? *col + 1 : *col;
 	uint8_t num_live_neighbors = 0;
-	for (int8_t r = row_begin; r <= row_end; r++) {
+	for (int16_t r = row_begin; r <= row_end; r++) {
 
 		// account for wrap around
 		uint8_t neighbor_row;
@@ -213,7 +213,7 @@ static uint8_t count_live_neighbors(
 		else
 			neighbor_row = (uint8_t)r;
 
-		for (int8_t c = col_begin; c <= col_end; c++) {
+		for (int16_t c = col_begin; c <= col_end; c++) {
 
 			// account for wrap around
 			uint8_t neighbor_col;
