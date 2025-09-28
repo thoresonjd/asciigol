@@ -11,7 +11,7 @@ make asciigol
 
 By default, the game will start with a random initial state.
 
-To execute the program in it's default state, simply run
+To execute the program in its default state, simply run
 ```
 ./asciigol
 ```
@@ -27,7 +27,7 @@ The asciigol program supports various parameters:
 | `delay`     | Delay between frames in milliseconds                    | `500`       | Non-negative integer             |
 | `live-char` | Character representing a live cell                      | `#`         | ASCII character                  |
 | `dead-char` | Character representing a dead cell                      | ` ` (space) | ASCII character                  |
-| `file`      | Custom configuration file                               | NA          | Name of file on system           |
+| `file`      | Custom configuration file                               | NA          | Name of file                     |
 | `wrap`      | Reaching row/column limit will wrap around to other end | `false`     | String literal `true` or `false` |
 
 To execute the program with parameters, the command must be in the following format:
@@ -35,19 +35,19 @@ To execute the program with parameters, the command must be in the following for
 ./asciigol --<parameter>=<value> ...
 ```
 
-In the event that duplicate arguments are provided, only the first instance will be accepted while the subsequent ones will be ignored.
+In the event that duplicate arguments are provided, only the first instance will be accepted while the subsequent ones will be ignoredj
 
-In addition to their default values, `--width` and `--height` also have a current maximum of 250 and 100 respectively. Using 0 for either of the dimensions will result in the program falling back to the default values.
+In addition to their default values, the `width` and `height` also have a maximum of 255 (the maximum value of an eight-bit unsigned integer). Using 0 for either of the dimensions will result in the program falling back to the default values.
 
 ### Configuration Files
 
-As alluded to in the aforementioned table, asciigol supports custom, fixed initial states via configuration files provided via the `--file` parameter.
+As alluded to in the aforementioned table, asciigol supports custom, fixed initial states via configuration files provided via the `file` parameter.
 
 Configuration files adhere to the format as follows:
 
 The first line is the literal `asciigol`.
 
-The second line contains the non-negative integer width and height of the cell grid separated by a comma: `<width>,<height>`. If `--width` and/or `--height` are also specified in the argument list, they will be ignored in favor of the dimensions specified in the file.
+The second line contains the non-negative integer width and height of the cell grid separated by a comma: `<width>,<height>`. If `width` and/or `height` are also specified in the argument list, they will be ignored in favor of the dimensions specified in the file.
 
 The remaining lines contain a series of zeroes and ones, where `0` represents a dead cell and `1` represents a live cell. Of these remaining lines, each line must contain the same number of characters as the specified width, and the number of lines must match the specified height.
 
