@@ -33,6 +33,13 @@ static void wait(const uint16_t* const delay) {
 	usleep((*delay ? *delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
 }
 
+static void free_buffer(cell_t** buffer) {
+	if (*buffer) {
+		free(*buffer);
+		*buffer = NULL;
+	}
+}
+
 static asciigol_result_t init_cells_from_file(
 	cell_t** cells,
 	uint8_t* const width,
@@ -147,10 +154,8 @@ EXIT:
 		free(line);
 		line = NULL;
 	}
-	if (*cells && result != ASCIIGOL_OK) {
-		free(*cells);
-		*cells = NULL;
-	}
+	if (result != ASCIIGOL_OK)
+		free_buffer(cells);
 	if (file) {
 		fclose(file);
 		file = NULL;
@@ -169,7 +174,7 @@ static asciigol_result_t init_cells_at_random(
 	*height = *height ? *height : DEFAULT_HEIGHT;
 	uint16_t size = *width * *height;
 	*cells = (cell_t*)malloc(size);
-	if (!cells)
+	if (!*cells)
 		return ASCIIGOL_BAD_DIMENSION;
 	srand(time(NULL));
 	for (uint16_t i = 0; i < size; i++)
@@ -177,15 +182,34 @@ static asciigol_result_t init_cells_at_random(
 	return ASCIIGOL_OK;
 }
 
+static asciigol_result_t init_back_buffer(
+	cell_t** back_buffer,
+	const uint16_t size
+) {
+	*back_buffer = (cell_t*)malloc(size);
+	if (!*back_buffer)
+		return ASCIIGOL_BAD_DIMENSION;
+	return ASCIIGOL_OK;
+}
+
 static asciigol_result_t init_cells(
 	cell_t** cells,
+	cell_t** back_buffer,
 	uint8_t* const width,
 	uint8_t* const height,
 	char* const filename
 ) {
+	asciigol_result_t result = ASCIIGOL_OK;
 	if (filename)
-		return init_cells_from_file(cells, width, height, filename);
-	return init_cells_at_random(cells, width, height);
+		result = init_cells_from_file(cells, width, height, filename);
+	else
+		result = init_cells_at_random(cells, width, height);
+	if (result != ASCIIGOL_OK)
+		return result;
+	result = init_back_buffer(back_buffer, *width * *height);
+	if (result != ASCIIGOL_OK)
+		free_buffer(cells);
+	return result;
 }
 
 static uint8_t count_live_neighbors(
@@ -264,13 +288,13 @@ static cell_t compute_cell(
 
 static asciigol_result_t compute_cells(
 	cell_t** cells,
+	cell_t** new_cells,
 	const uint8_t* const width,
 	const uint8_t* const height,
 	const bool* const wrap
 ) {
-	uint16_t size = *width * *height;
-	cell_t* new_cells = (cell_t*)malloc(size);
 	bool converged = true;
+	uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
 		uint8_t row = (uint8_t)(i / *width);
 		uint8_t col = (uint8_t)(i % *width);
@@ -278,11 +302,15 @@ static asciigol_result_t compute_cells(
 		cell_t new_cell = compute_cell(cells, &row, &col, width, height, wrap);
 		if (cell != new_cell)
 			converged = false;
-		new_cells[i] = new_cell;
+		(*new_cells)[i] = new_cell;
 	}
-	free(*cells);
-	*cells = new_cells;
 	return converged ? ASCIIGOL_CONVERGED : ASCIIGOL_OK;
+}
+
+static void swap_buffers(cell_t** buffer_a, cell_t** buffer_b) {
+	cell_t* temp = *buffer_a;
+	*buffer_a = *buffer_b;
+	*buffer_b = temp;
 }
 
 static void render_cells(
@@ -303,22 +331,26 @@ static void render_cells(
 	}
 }
 
+static void destroy_cells(cell_t** cells, cell_t** back_buffer) {
+	free_buffer(cells);
+	free_buffer(back_buffer);
+}
+
 asciigol_result_t asciigol(asciigol_args_t args) {
 	cell_t* cells = NULL;
-	asciigol_result_t result = init_cells(&cells, &args.width, &args.height, args.filename);
+	cell_t* back_buffer = NULL;
+	asciigol_result_t result = init_cells(&cells, &back_buffer, &args.width, &args.height, args.filename);
 	if (result != ASCIIGOL_OK)
 		return result;
 	clear_screen();
 	while (result != ASCIIGOL_CONVERGED) {
 		reset_cursor();
 		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char);
-		result = compute_cells(&cells, &args.width, &args.height, &args.wrap);
+		result = compute_cells(&cells, &back_buffer, &args.width, &args.height, &args.wrap);
+		swap_buffers(&cells, &back_buffer);
 		wait(&args.delay);
 	}
-	if (cells) {
-		free(cells);
-		cells = NULL;
-	}
+	destroy_cells(&cells, &back_buffer);
 	return result;
 }
 
