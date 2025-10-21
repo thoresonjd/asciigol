@@ -16,7 +16,7 @@ fi
 
 for FILE in "$INVAL_CONFIG_DIR"/*; do
 	if [ -f "$FILE" ]; then
-		$ASCIIGOL_BIN --file=$FILE
+		echo -e "$FILE\n\t$($ASCIIGOL_BIN --file=$FILE)"
 	fi
 done
 
