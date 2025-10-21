@@ -22,7 +22,7 @@ static const char* USAGE =
 	"\t--live-char=<char> character representing a live cell\n"
 	"\t--dead-char=<char> character representing a dead cell\n"
 	"\t--file=<string>    custom configuration file\n"
-	"\t--wrap=true|false  reaching row/column limit will\n"
+	"\t--wrap             reaching row/column limit will\n"
 	"\t                   wrap around to the other end";
 
 static bool parse_arg(asciigol_args_t* const args, char* arg) {
@@ -36,10 +36,14 @@ static bool parse_arg(asciigol_args_t* const args, char* arg) {
 		return parse_char(arg, &args->live_char);
 	if (!args->dead_char && skip_prefix(&arg, "--dead-char="))
 		return parse_char(arg, &args->dead_char);
-	if (!args->filename && skip_prefix(&arg, "--file="))
-		return parse_string(arg, &args->filename);
-	if (!args->wrap && skip_prefix(&arg, "--wrap="))
-		return parse_bool(arg, &args->wrap);
+	if (!args->filename && skip_prefix(&arg, "--file=")) {
+		args->filename = arg;
+		return true;
+	}
+	if (!args->wrap && !strcmp(arg, "--wrap")) {
+		args->wrap = true;
+		return true;
+	}
 	return false;
 }
 

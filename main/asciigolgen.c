@@ -18,21 +18,24 @@
 static const char* USAGE =
 	"Usage: asciigolgen [arguments]\n"
 	"Parameters:\n"
+	"\t--file=<string>  name of configuration file to generate\n"
 	"\t--width=<uint8>  width of asciigol grid to configure\n"
 	"\t--height=<uint8> height of asciigol grid to configure\n"
-	"\t--file=<string>  name of configuration file to generate\n"
 	"\t--cell=0|1       the cell state to initialize with";
 
 static bool parse_arg(asciigolgen_args_t* const args, char* arg) {
+	if (!args->filename && skip_prefix(&arg, "--file=")) {
+		args->filename = arg;
+		return true;
+	}
 	if (!args->width && skip_prefix(&arg, "--width="))
 		return parse_uint8(arg, &args->width);
 	if (!args->height && skip_prefix(&arg, "--height="))
 		return parse_uint8(arg, &args->height);
-	if (!args->filename && skip_prefix(&arg, "--file="))
-		return parse_string(arg, &args->filename);
-	if (!args->cell && skip_prefix(&arg, "--cell="))
-		if (parse_char(arg, &args->cell))
-			return args->cell == '0' || args->cell == '1';
+	if (!args->cell &&
+	    skip_prefix(&arg, "--cell=") &&
+	    parse_char(arg, &args->cell))
+		return args->cell == '0' || args->cell == '1';
 	return false;
 }
 

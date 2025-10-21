@@ -51,21 +51,3 @@ bool parse_char(const char* const arg, char* character) {
 	return true;
 }
 
-bool parse_string(char* const arg, char** string) {
-	if (!arg || !string)
-		return false;
-	(*string) = arg;
-	return true;
-}
-
-bool parse_bool(const char* const arg, bool* boolean) {
-	if (!arg || !boolean)
-		return false;
-	if (!strcmp(arg, "true"))
-		(*boolean) = true;
-	else if (!strcmp(arg, "false"))
-		(*boolean) = false;
-	else
-		return false;
-	return true;
-}

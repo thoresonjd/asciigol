@@ -20,19 +20,19 @@ To execute the program in its default state, simply run
 
 The asciigol program supports various parameters:
 
-| Parameter   | Description                                             | Default     | Type                             |
-|-------------|---------------------------------------------------------|-------------|----------------------------------|
-| `width`     | Width of grid                                           | `100`       | Non-negative integer             |
-| `height`    | Height of grid                                          | `40`        | Non-negative integer             |
-| `delay`     | Delay between frames in milliseconds                    | `500`       | Non-negative integer             |
-| `live-char` | Character representing a live cell                      | `#`         | ASCII character                  |
-| `dead-char` | Character representing a dead cell                      | ` ` (space) | ASCII character                  |
-| `file`      | Custom configuration file                               | NA          | Name of file                     |
-| `wrap`      | Reaching row/column limit will wrap around to other end | `false`     | String literal `true` or `false` |
+| Parameter   | Description                                             | Default     | Type                 |
+|-------------|---------------------------------------------------------|-------------|----------------------|
+| `width`     | Width of grid                                           | `100`       | Non-negative integer |
+| `height`    | Height of grid                                          | `40`        | Non-negative integer |
+| `delay`     | Delay between frames in milliseconds                    | `500`       | Non-negative integer |
+| `live-char` | Character representing a live cell                      | `#`         | ASCII character      |
+| `dead-char` | Character representing a dead cell                      | ` ` (space) | ASCII character      |
+| `file`      | Custom configuration file                               | NA          | Name of file         |
+| `wrap`      | Reaching row/column limit will wrap around to other end | `false`     | NA (flag)            |
 
 To execute the program with parameters, the command must be in the following format:
 ```
-./asciigol --<parameter>=<value> ...
+./asciigol --<parameter>[=<value>] ...
 ```
 
 In the event that duplicate arguments are provided, only the first instance will be accepted while the subsequent ones will be ignoredj

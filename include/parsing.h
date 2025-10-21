@@ -43,21 +43,5 @@ bool parse_uint16(const char* const arg, uint16_t* value);
  */
 bool parse_char(const char* const arg, char* character);
 
-/**
- * @brief Parses a string by handing it to another address
- * @param arg The argument to parse
- * @param string Address to give the parsed string to
- * @return true if parsing succeeded, false otherwise
- */
-bool parse_string(char* const arg, char** string);
-
-/**
- * @brief Parses a boolean argument from string literal "true" or "false"
- * @param arg The argument to parse
- * @param boolean Address to give the parsed value to
- * @return true if parsing succeeded, false otherwise
- */
-bool parse_bool(const char* const arg, bool* boolean);
-
 #endif // PARSING_H
 
