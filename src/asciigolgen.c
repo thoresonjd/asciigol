@@ -15,14 +15,16 @@
 #include <unistd.h>
 
 typedef char cell_t;
-typedef char direction_t;
+
+typedef enum {
+	DIRECTION_UP = 'A',
+	DIRECTION_DOWN = 'B',
+	DIRECTION_RIGHT = 'C',
+	DIRECTION_LEFT = 'D'
+} direction_t ;
 
 static const cell_t LIVE_CELL = '1';
 static const cell_t DEAD_CELL = '0';
-static const direction_t UP = 'A';
-static const direction_t DOWN = 'B';
-static const direction_t RIGHT = 'C';
-static const direction_t LEFT = 'D';
 static const char QUIT = 'q';
 static const char* CONTROLS = "Move: Up, Down, Left, Right\nModify: 0, 1\nQuit: q";
 
@@ -109,13 +111,13 @@ static asciigolgen_result_t process_input(
 		getchar(); // skip [
 		char value = getchar();
 		const uint16_t size = *width * *height;
-		if (value == UP && *highlight_idx >= *width)
+		if (value == DIRECTION_UP && *highlight_idx >= *width)
 			(*highlight_idx) -= *width;
-		else if (value == DOWN && *highlight_idx < size - *width)
+		else if (value == DIRECTION_DOWN && *highlight_idx < size - *width)
 			(*highlight_idx) += *width;
-		else if (value == RIGHT && *highlight_idx < size - 1)
+		else if (value == DIRECTION_RIGHT && *highlight_idx < size - 1)
 			(*highlight_idx)++;
-		else if (value == LEFT && *highlight_idx > 0)
+		else if (value == DIRECTION_LEFT && *highlight_idx > 0)
 			(*highlight_idx)--;
 	}
 	return ASCIIGOLGEN_OK;
