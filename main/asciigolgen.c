@@ -1,5 +1,5 @@
 /**
- * @file asciigolgen_main.c
+ * @file asciigolgen.c
  * @brief Configuration file generator for asciigol.
  * @author Justin Thoreson
  * @date 2025
