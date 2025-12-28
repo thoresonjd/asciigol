@@ -48,6 +48,21 @@ static const char DEFAULT_LIVE_CHAR = '#';
 static const char DEFAULT_DEAD_CHAR = ' ';
 
 /**
+ * @brief ANSI control code for white background with black foreground.
+ */
+static const char* BG_WHITE_FG_BLACK = "\x1b[47;30m";
+
+/**
+ * @brief ANSI control code for black background with white foreground.
+ */
+static const char* BG_BLACK_FG_WHITE = "\x1b[40;37m";
+
+/**
+ * @brief ANSI control code to reset terminal attributes (colors) to default.
+ */
+static const char* BG_DEFAULT_FG_DEFAULT = "\x1b[0m";
+
+/**
  * @brief Clear the contents of the terminal screen.
  */
 static void clear_screen();
@@ -211,13 +226,15 @@ static void swap_buffers(cell_t** buffer_a, cell_t** buffer_b);
  * @param[in] height The height of the Game of Life grid.
  * @param[in] live_char The character to render for a live cell.
  * @param[in] dead_char The character to render for a dead cell.
+ * @param[in] background The background color type.
  */
 static void render_cells(
 	cell_t** const cells,
 	const uint8_t* const width,
 	const uint8_t* const height,
 	const char* const live_char,
-	const char* const dead_char
+	const char* const dead_char,
+	const asciigol_bg_t* const background
 );
 
 /**
@@ -236,7 +253,7 @@ asciigol_result_t asciigol(asciigol_args_t args) {
 	clear_screen();
 	while (result != ASCIIGOL_CONVERGED) {
 		reset_cursor();
-		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char);
+		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char, &args.background);
 		result = compute_cells(&cells, &back_buffer, &args.width, &args.height, &args.wrap);
 		swap_buffers(&cells, &back_buffer);
 		wait(&args.delay);
@@ -542,16 +559,32 @@ static void render_cells(
 	const uint8_t* const width,
 	const uint8_t* const height,
 	const char* const live_char,
-	const char* const dead_char
+	const char* const dead_char,
+	const asciigol_bg_t* const background
 ) {
 	uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
-		const char character = (*cells)[i] ?
-				(*live_char ? *live_char : DEFAULT_LIVE_CHAR) :
-				(*dead_char ? *dead_char : DEFAULT_DEAD_CHAR);
+		const bool is_live_cell = (bool)(*cells)[i];
+		const bool are_chars_same =
+			*live_char && *dead_char && *live_char == *dead_char;
+		const bool alternate_bg = are_chars_same && !is_live_cell;
+		const char character = is_live_cell ?
+			(*live_char ? *live_char : DEFAULT_LIVE_CHAR) :
+			(*dead_char ? *dead_char : DEFAULT_DEAD_CHAR);
+		switch (*background) {
+			case ASCIIGOL_BG_LIGHT:
+				printf("%s", alternate_bg ? BG_BLACK_FG_WHITE : BG_WHITE_FG_BLACK);
+				break;
+			case ASCIIGOL_BG_DARK:
+				printf("%s", alternate_bg ? BG_WHITE_FG_BLACK : BG_BLACK_FG_WHITE);
+				break;
+			case ASCIIGOL_BG_NONE:
+			default:
+				printf("%s", BG_DEFAULT_FG_DEFAULT);
+		}
 		putchar(character);
 		if (i % *width == *width - 1)
-			putchar('\n');
+			printf("%s\n", BG_DEFAULT_FG_DEFAULT);
 	}
 }
 

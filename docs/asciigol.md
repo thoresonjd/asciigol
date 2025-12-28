@@ -20,15 +20,16 @@ To execute the program in its default state, simply run
 
 The asciigol program supports various parameters:
 
-| Parameter   | Description                                             | Default     | Type                 |
-|-------------|---------------------------------------------------------|-------------|----------------------|
-| `width`     | Width of grid                                           | `100`       | Non-negative integer |
-| `height`    | Height of grid                                          | `40`        | Non-negative integer |
-| `delay`     | Delay between frames in milliseconds                    | `500`       | Non-negative integer |
-| `live-char` | Character representing a live cell                      | `#`         | ASCII character      |
-| `dead-char` | Character representing a dead cell                      | ` ` (space) | ASCII character      |
-| `file`      | Custom configuration file                               | NA          | Name of file         |
-| `wrap`      | Reaching row/column limit will wrap around to other end | `false`     | NA (flag)            |
+| Parameter   | Description                                             | Default     | Type                                            |
+|-------------|---------------------------------------------------------|-------------|-------------------------------------------------|
+| `width`     | Width of grid                                           | `100`       | Non-negative integer                            |
+| `height`    | Height of grid                                          | `40`        | Non-negative integer                            |
+| `delay`     | Delay between frames in milliseconds                    | `500`       | Non-negative integer                            |
+| `live-char` | Character representing a live cell                      | `#`         | ASCII character                                 |
+| `dead-char` | Character representing a dead cell                      | ` ` (space) | ASCII character                                 |
+| `file`      | Custom configuration file                               | NA          | Name of file                                    |
+| `bg`        | Enable background color                                 | `"none"`    | String literal `"none"`, `"light"`, or `"dark"` |
+| `wrap`      | Reaching row/column limit will wrap around to other end | `false`     | NA (flag)                                       |
 
 To execute the program with parameters, the command must be in the following format:
 ```
@@ -38,6 +39,8 @@ To execute the program with parameters, the command must be in the following for
 In the event that duplicate arguments are provided, only the first instance will be accepted while the subsequent ones will be ignoredj
 
 In addition to their default values, the `width` and `height` also have a maximum of 255 (the maximum value of an eight-bit unsigned integer). Using 0 for either of the dimensions will result in the program falling back to the default values.
+
+The background (`bg`) parameter allows the background color to be enabled. The default is no background color (`"none"`), but `"light"` (white background, black foreground) and `"dark"` (black background, white foreground) are specifiable. If the live and dead characters are the same, and the background color type is not `"none"`, the background (and foreground) colors will alternate between the live and dead cells.
 
 ### Configuration Files
 

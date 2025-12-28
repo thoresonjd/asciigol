@@ -13,6 +13,15 @@
 #include <stdint.h>
 
 /**
+ * @brief Enumeration denoting the background color type.
+ */
+typedef enum {
+	ASCIIGOL_BG_NONE,
+	ASCIIGOL_BG_LIGHT,
+	ASCIIGOL_BG_DARK,
+} asciigol_bg_t;
+
+/**
  * @brief Arguments to be given to the asciigol program.
  */
 typedef struct {
@@ -23,6 +32,7 @@ typedef struct {
 	char live_char;
 	char dead_char;
 	bool wrap;
+	asciigol_bg_t background;
 } asciigol_args_t;
 
 /**

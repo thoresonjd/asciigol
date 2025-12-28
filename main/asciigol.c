@@ -19,14 +19,15 @@
 static const char* USAGE =
 	"Usage: asciigol [arguments]\n"
 	"Parameters:\n"
-	"\t--width=<uint8>    width of grid\n"
-	"\t--height=<uint8>   height of grid\n"
-	"\t--delay=<uint16>   delay between frames in milliseconds\n"
-	"\t--live-char=<char> character representing a live cell\n"
-	"\t--dead-char=<char> character representing a dead cell\n"
-	"\t--file=<string>    custom configuration file\n"
-	"\t--wrap             reaching row/column limit will\n"
-	"\t                   wrap around to the other end";
+	"\t--width=<uint8>        width of grid\n"
+	"\t--height=<uint8>       height of grid\n"
+	"\t--delay=<uint16>       delay between frames in milliseconds\n"
+	"\t--live-char=<char>     character representing a live cell\n"
+	"\t--dead-char=<char>     character representing a dead cell\n"
+	"\t--file=<string>        custom configuration file\n"
+	"\t--bg={none,light,dark} enable background color: light or dark\n"
+	"\t--wrap                 reaching row/column limit will\n"
+	"\t                       wrap around to the other end";
 
 /**
  * @brief Parse a provided command-line argument.
@@ -84,6 +85,17 @@ static bool parse_arg(asciigol_args_t* const args, char* arg) {
 		return parse_char(arg, &args->dead_char);
 	if (!args->filename && skip_prefix(&arg, "--file=")) {
 		args->filename = arg;
+		return true;
+	}
+	if (!args->background && skip_prefix(&arg, "--bg=")) {
+		if (!strcmp(arg, "none"))
+			args->background = ASCIIGOL_BG_NONE;
+		else if (!strcmp(arg, "light"))
+			args->background = ASCIIGOL_BG_LIGHT;
+		else if (!strcmp(arg, "dark"))
+			args->background = ASCIIGOL_BG_DARK;
+		else
+			return false;
 		return true;
 	}
 	if (!args->wrap && !strcmp(arg, "--wrap")) {
