@@ -12,14 +12,238 @@
 #include <time.h>
 #include <unistd.h>
 
+/**
+ * @brief The data type representing a Game of Life cell.
+ */
 typedef uint8_t cell_t;
 
+/**
+ * @brief The default width of the Game of Life grid.
+ */
 static const uint8_t DEFAULT_WIDTH = 100;
+
+/**
+ * @brief The default height of the Game of Life grid.
+ */
 static const uint8_t DEFAULT_HEIGHT = 40;
+
+/**
+ * @brief The default delay between frames in milliseconds.
+ */
 static const uint16_t DEFAULT_DELAY_MILLIS = 50;
+
+/**
+ * @brief The number of microseconds per millisecond.
+ */
 static const uint16_t MICROS_PER_MILLI = 1000;
+
+/**
+ * @brief The default character representing a live cell.
+ */
 static const char DEFAULT_LIVE_CHAR = '#';
+
+/**
+ * @brief The default character representing a dead cell.
+ */
 static const char DEFAULT_DEAD_CHAR = ' ';
+
+/**
+ * @brief Clear the contents of the terminal screen.
+ */
+static void clear_screen();
+
+/**
+ * @brief Reset the cursor to the top-left position.
+ */
+static void reset_cursor();
+
+/**
+ * @brief Pause execution for a provided number of milliseconds.
+ * @param[in] delay The number of milliseconds to sleep for.
+ */
+static void wait(const uint16_t* const delay);
+
+/**
+ * @brief Deallocate a provided heap-allocated buffer.
+ * @param[in] buffer The buffer to deallocate.
+ */
+static void free_buffer(cell_t** buffer);
+
+/**
+ * @brief Initialize the Game of Life cells from a provided file.
+ * @param[out] cells The cells comprising the Game of Life grid.
+ * @param[out] width The width of the Game of Life grid.
+ * @param[out] height The height of the Game of Life grid.
+ * @param[in] filename The name of the file to initialize the cells from.
+ * @return The result of the initialization.
+ */
+static asciigol_result_t init_cells_from_file(
+	cell_t** cells,
+	uint8_t* const width,
+	uint8_t* const height,
+	char* const filename
+);
+
+/**
+ * @brief Initialize the Game of Life cells at random.
+ * @param[out] cells The cells comprising the Game of Life grid.
+ * @param[in] width The width of the Game of Life grid.
+ * @param[in] height The height of the Game of Life grid.
+ * @return The result of the initialization.
+ */
+static asciigol_result_t init_cells_at_random(
+	cell_t** cells,
+	uint8_t* const width,
+	uint8_t* const height
+);
+
+/**
+ * @brief Initialize the back-buffer for the Game of Life cells.
+ * @param[out] back_buffer The back-buffer for the Game of Life cells.
+ * @param[in] size The size that should be allocated.
+ * @return The result of the initialization.
+ */
+static asciigol_result_t init_back_buffer(
+	cell_t** back_buffer,
+	const uint16_t size
+);
+
+/**
+ * @brief Initialize the Game of Life cells.
+ * @param[out] cells The cells comprising the Game of Life grid.
+ * @param[out] back_buffer The back-buffer for the Game of Life cells.
+ * @param[in] width The width of the Game of Life grid.
+ * @param[in] height The height of the Game of Life grid.
+ * @return The result of the initialization.
+ */
+static asciigol_result_t init_cells(
+	cell_t** cells,
+	cell_t** back_buffer,
+	uint8_t* const width,
+	uint8_t* const height,
+	char* const filename
+);
+
+/**
+ * @brief Count the number of live neighbors surrounding a cell.
+ * @param[in] cells The cells in the Game of Life grid.
+ * @param[in] row The row of the cell to count the neighbors of.
+ * @param[in] col The column of the cell to count the neighbors of.
+ * @param[in] width The width of the Game of Life grid.
+ * @param[in] height The height of the Game of Life grid.
+ * @param[in] wrap Specify whether, if the cell is residing on an edge of the
+ *                 grid, to count the neighbors along the opposite edge of said
+ *                 cell, wrapping around as if both edges were connected.
+ * @return The number of live neighbors surrounding the specified cell.
+ */
+static uint8_t count_live_neighbors(
+	cell_t** const cells,
+	const uint8_t* const row,
+	const uint8_t* const col,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const bool* const wrap
+);
+
+/**
+ * @brief Determine if a cell should live or die.
+ * @param[in] cell A cell in the Game of Life grid.
+ * @param[in] num_live_neighbors The number of living cells neighboring the
+ *                               given cell.
+ * @return The new value of the provided cell: live or dead.
+ */
+static cell_t compute_game_of_life(
+	const cell_t* const cell,
+	const uint8_t* const num_live_neighbors
+);
+
+/**
+ * @brief Compute the new value of a cell.
+ * @param[in] cells The cells comprising the Game of Life grid.
+ * @param[in] row The row of the cell to recompute.
+ * @param[in] col The column of the cell to recompute.
+ * @param[in] width The width of the Game of Life grid.
+ * @param[in] height The height of the Game of Life grid.
+ * @param[in] wrap Specify whether, if the cell is residing on an edge of the
+ *                 grid, to count the neighbors along the opposite edge of said
+ *                 cell, wrapping around as if both edges were connected.
+ * @return The new value of the specified cell.
+ */
+static cell_t compute_cell(
+	cell_t** const cells,
+	const uint8_t* const row,
+	const uint8_t* const col,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const bool* const wrap
+);
+
+/**
+ * @brief Compute the next iteration of cells.
+ * @param[in] cells The cells comprising the Game of Life grid.
+ * @param[out] new_cells The newly-computed cells of the Game of Life grid.
+ * @param[in] width The width of the Game of Life grid.
+ * @param[in] height The height of the Game of Life grid.
+ * @param[in] wrap Specify whether, if the cell is residing on an edge of the
+ *                 grid, to count the neighbors along the opposite edge of said
+ *                 cell, wrapping around as if both edges were connected.
+ * @return The result of computing the next Game of Life iteration.
+ */
+static asciigol_result_t compute_cells(
+	cell_t** cells,
+	cell_t** new_cells,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const bool* const wrap
+);
+
+/**
+ * @brief Swap two buffers.
+ * @param[in,out] buffer_a The first buffer.
+ * @param[in,out] buffer_b The second buffer.
+ */
+static void swap_buffers(cell_t** buffer_a, cell_t** buffer_b);
+
+/**
+ * @brief Render the Game of Life cells.
+ * @param[in] cells The cells comprising the Game of Life grid.
+ * @param[in] width The width of the Game of Life grid.
+ * @param[in] height The height of the Game of Life grid.
+ * @param[in] live_char The character to render for a live cell.
+ * @param[in] dead_char The character to render for a dead cell.
+ */
+static void render_cells(
+	cell_t** const cells,
+	const uint8_t* const width,
+	const uint8_t* const height,
+	const char* const live_char,
+	const char* const dead_char
+);
+
+/**
+ * @brief Deallocate the Game of Life buffers.
+ * @param[in] cells The active buffer containing the Game of Life cells.
+ * @param[in] back_buffer The back-buffer for the Game of Life cells.
+ */
+static void destroy_cells(cell_t** cells, cell_t** back_buffer);
+
+asciigol_result_t asciigol(asciigol_args_t args) {
+	cell_t* cells = NULL;
+	cell_t* back_buffer = NULL;
+	asciigol_result_t result = init_cells(&cells, &back_buffer, &args.width, &args.height, args.filename);
+	if (result != ASCIIGOL_OK)
+		return result;
+	clear_screen();
+	while (result != ASCIIGOL_CONVERGED) {
+		reset_cursor();
+		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char);
+		result = compute_cells(&cells, &back_buffer, &args.width, &args.height, &args.wrap);
+		swap_buffers(&cells, &back_buffer);
+		wait(&args.delay);
+	}
+	destroy_cells(&cells, &back_buffer);
+	return result;
+}
 
 static void clear_screen() {
 	printf("\x1b[2J");
@@ -334,23 +558,5 @@ static void render_cells(
 static void destroy_cells(cell_t** cells, cell_t** back_buffer) {
 	free_buffer(cells);
 	free_buffer(back_buffer);
-}
-
-asciigol_result_t asciigol(asciigol_args_t args) {
-	cell_t* cells = NULL;
-	cell_t* back_buffer = NULL;
-	asciigol_result_t result = init_cells(&cells, &back_buffer, &args.width, &args.height, args.filename);
-	if (result != ASCIIGOL_OK)
-		return result;
-	clear_screen();
-	while (result != ASCIIGOL_CONVERGED) {
-		reset_cursor();
-		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char);
-		result = compute_cells(&cells, &back_buffer, &args.width, &args.height, &args.wrap);
-		swap_buffers(&cells, &back_buffer);
-		wait(&args.delay);
-	}
-	destroy_cells(&cells, &back_buffer);
-	return result;
 }
 

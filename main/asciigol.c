@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Usage information explaining how to run the program.
+ */
 static const char* USAGE =
 	"Usage: asciigol [arguments]\n"
 	"Parameters:\n"
@@ -24,6 +27,49 @@ static const char* USAGE =
 	"\t--file=<string>    custom configuration file\n"
 	"\t--wrap             reaching row/column limit will\n"
 	"\t                   wrap around to the other end";
+
+/**
+ * @brief Parse a provided command-line argument.
+ * @param[in,out] args The parsed arguments.
+ * @param[in] arg The argument to parse.
+ * @return True if the argument was parsed successfully, false otherwise.
+ */
+static bool parse_arg(asciigol_args_t* const args, char* arg);
+
+/**
+ * @brief Parse provided command-line arguments.
+ * @param[in,out] args The parsed arguments.
+ * @param[in] argc The number of arguments to parse.
+ * @param[in] argv The list of arguments to parse.
+ * @return True if the arguments were parsed successfully, false otherwise.
+ */
+static bool parse_args(
+	asciigol_args_t* const args,
+	const int* const argc,
+	char** const argv
+);
+
+/**
+ * @brief Print the result of the asciigol program as text.
+ * @param[in] result The asciigol result.
+ */
+static void print_asciigol_result(const asciigol_result_t* const result);
+
+/**
+ * @brief Determine if the asciigol program ran successfully.
+ * @param[in] result The asciigol result.
+ * @return True if asciigol ran successfully, false otherwise.
+ */
+static bool is_asciigol_success(const asciigol_result_t* const result);
+
+int main(int argc, char** argv) {
+	asciigol_args_t args = { 0 };
+	if (!parse_args(&args, &argc, argv))
+		return EXIT_FAILURE;
+	asciigol_result_t result = asciigol(args);
+	print_asciigol_result(&result);
+	return is_asciigol_success(&result) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
 
 static bool parse_arg(asciigol_args_t* const args, char* arg) {
 	if (!args->width && skip_prefix(&arg, "--width="))
@@ -90,14 +136,5 @@ static void print_asciigol_result(const asciigol_result_t* const result) {
 
 static bool is_asciigol_success(const asciigol_result_t* const result) {
 	return *result == ASCIIGOL_OK || *result == ASCIIGOL_CONVERGED;
-}
-
-int main(int argc, char** argv) {
-	asciigol_args_t args = { 0 };
-	if (!parse_args(&args, &argc, argv))
-		return EXIT_FAILURE;
-	asciigol_result_t result = asciigol(args);
-	print_asciigol_result(&result);
-	return is_asciigol_success(&result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
