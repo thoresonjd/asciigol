@@ -564,13 +564,12 @@ static void render_cells(
 ) {
 	uint16_t size = *width * *height;
 	for (uint16_t i = 0; i < size; i++) {
+		const char live = *live_char ? *live_char : DEFAULT_LIVE_CHAR;
+		const char dead = *dead_char ? *dead_char : DEFAULT_DEAD_CHAR;
+		const bool are_chars_same = live == dead;
 		const bool is_live_cell = (bool)(*cells)[i];
-		const bool are_chars_same =
-			*live_char && *dead_char && *live_char == *dead_char;
 		const bool alternate_bg = are_chars_same && !is_live_cell;
-		const char character = is_live_cell ?
-			(*live_char ? *live_char : DEFAULT_LIVE_CHAR) :
-			(*dead_char ? *dead_char : DEFAULT_DEAD_CHAR);
+		const char character = is_live_cell ? live : dead;
 		switch (*background) {
 			case ASCIIGOL_BG_LIGHT:
 				printf("%s", alternate_bg ? BG_BLACK_FG_WHITE : BG_WHITE_FG_BLACK);
