@@ -2,7 +2,7 @@
 
 An implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life), written in C, that renders as ASCII in the terminal.
 
-https://github.com/user-attachments/assets/4bc1f77b-d9b0-4b22-a1a0-079e9e85a318
+https://github.com/user-attachments/assets/39daa133-06d9-4eea-a3a0-c77e78ec8358
 
 | Program     | Description               | Documentation                           |
 |-------------|---------------------------|-----------------------------------------|

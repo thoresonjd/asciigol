@@ -84,6 +84,10 @@ https://github.com/user-attachments/assets/c1310bc3-42ff-4693-a7a3-0280adfd53ed
 
 https://github.com/user-attachments/assets/4bc1f77b-d9b0-4b22-a1a0-079e9e85a318
 
+With background coloring
+
+https://github.com/user-attachments/assets/39daa133-06d9-4eea-a3a0-c77e78ec8358
+
 ### One in three cells are initially alive
 
 https://github.com/user-attachments/assets/a69cbad0-ac1d-455a-afe6-f38946959efd
