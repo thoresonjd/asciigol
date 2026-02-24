@@ -80,7 +80,7 @@ static void reset_cursor();
  * @brief Pause execution for a provided number of milliseconds.
  * @param[in] delay The number of milliseconds to sleep for.
  */
-static void wait(const uint16_t* const delay);
+static void wait(const uint16_t delay);
 
 /**
  * @brief Deallocate a provided heap-allocated buffer.
@@ -156,12 +156,12 @@ static asciigol_result_t init_cells(
  * @return The number of live neighbors surrounding the specified cell.
  */
 static uint8_t count_live_neighbors(
-	cell_t** const cells,
-	const uint8_t* const row,
-	const uint8_t* const col,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const bool* const wrap
+	cell_t* const cells,
+	const uint8_t row,
+	const uint8_t col,
+	const uint8_t width,
+	const uint8_t height,
+	const bool wrap
 );
 
 /**
@@ -172,8 +172,8 @@ static uint8_t count_live_neighbors(
  * @return The new value of the provided cell: live or dead.
  */
 static cell_t compute_game_of_life(
-	const cell_t* const cell,
-	const uint8_t* const num_live_neighbors
+	const cell_t cell,
+	const uint8_t num_live_neighbors
 );
 
 /**
@@ -189,12 +189,12 @@ static cell_t compute_game_of_life(
  * @return The new value of the specified cell.
  */
 static cell_t compute_cell(
-	cell_t** const cells,
-	const uint8_t* const row,
-	const uint8_t* const col,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const bool* const wrap
+	cell_t* const cells,
+	const uint8_t row,
+	const uint8_t col,
+	const uint8_t width,
+	const uint8_t height,
+	const bool wrap
 );
 
 /**
@@ -209,11 +209,11 @@ static cell_t compute_cell(
  * @return The result of computing the next Game of Life iteration.
  */
 static asciigol_result_t compute_cells(
-	cell_t** cells,
-	cell_t** new_cells,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const bool* const wrap
+	cell_t* cells,
+	cell_t* new_cells,
+	const uint8_t width,
+	const uint8_t height,
+	const bool wrap
 );
 
 /**
@@ -233,12 +233,12 @@ static void swap_buffers(cell_t** buffer_a, cell_t** buffer_b);
  * @param[in] background The background color type.
  */
 static void render_cells(
-	cell_t** const cells,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const char* const live_char,
-	const char* const dead_char,
-	const asciigol_bg_t* const background
+	cell_t* cells,
+	const uint8_t width,
+	const uint8_t height,
+	const char live_char,
+	const char dead_char,
+	const asciigol_bg_t background
 );
 
 /**
@@ -257,10 +257,10 @@ asciigol_result_t asciigol(asciigol_args_t args) {
 	clear_screen();
 	while (result != ASCIIGOL_CONVERGED) {
 		reset_cursor();
-		render_cells(&cells, &args.width, &args.height, &args.live_char, &args.dead_char, &args.background);
-		result = compute_cells(&cells, &back_buffer, &args.width, &args.height, &args.wrap);
+		render_cells(cells, args.width, args.height, args.live_char, args.dead_char, args.background);
+		result = compute_cells(cells, back_buffer, args.width, args.height, args.wrap);
 		swap_buffers(&cells, &back_buffer);
-		wait(&args.delay);
+		wait(args.delay);
 	}
 	destroy_cells(&cells, &back_buffer);
 	return result;
@@ -274,10 +274,10 @@ static void reset_cursor() {
 	printf("\x1b[H");
 }
 
-static void wait(const uint16_t* const delay) {
-	const uint8_t seconds =  *delay ? *delay / MILLIS_PER_SECOND : 0;
+static void wait(const uint16_t delay) {
+	const uint8_t seconds =  delay ? delay / MILLIS_PER_SECOND : 0;
 	const uint32_t nanoseconds =  NANOS_PER_MILLI *
-		(*delay ? *delay % MILLIS_PER_SECOND : DEFAULT_DELAY_MILLIS);
+		(delay ? delay % MILLIS_PER_SECOND : DEFAULT_DELAY_MILLIS);
 	struct timespec req =  { seconds, nanoseconds };
 	nanosleep(&req, NULL);
 }
@@ -462,26 +462,26 @@ static asciigol_result_t init_cells(
 }
 
 static uint8_t count_live_neighbors(
-	cell_t** const cells,
-	const uint8_t* const row,
-	const uint8_t* const col,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const bool* const wrap
+	cell_t* cells,
+	const uint8_t row,
+	const uint8_t col,
+	const uint8_t width,
+	const uint8_t height,
+	const bool wrap
 ) {
 	// get neighbor range; will go out of grid range when wrap is enabled
-	int16_t row_begin = *row || *wrap ? *row - 1 : *row;
-	int16_t col_begin = *col || *wrap ? *col - 1 : *col;
-	int16_t row_end = *row < *height - 1 || *wrap ? *row + 1 : *row;
-	int16_t col_end = *col < *width - 1 || *wrap ? *col + 1 : *col;
+	int16_t row_begin = row || wrap ? row - 1 : row;
+	int16_t col_begin = col || wrap ? col - 1 : col;
+	int16_t row_end = row < height - 1 || wrap ? row + 1 : row;
+	int16_t col_end = col < width - 1 || wrap ? col + 1 : col;
 	uint8_t num_live_neighbors = 0;
 	for (int16_t r = row_begin; r <= row_end; r++) {
 
 		// account for wrap around
 		uint8_t neighbor_row;
 		if (r == -1)
-			neighbor_row = *height - 1;
-		else if (r == *height)
+			neighbor_row = height - 1;
+		else if (r == height)
 			neighbor_row = 0;
 		else
 			neighbor_row = (uint8_t)r;
@@ -491,15 +491,15 @@ static uint8_t count_live_neighbors(
 			// account for wrap around
 			uint8_t neighbor_col;
 			if (c == -1)
-				neighbor_col = *width - 1;
-			else if (c == *width)
+				neighbor_col = width - 1;
+			else if (c == width)
 				neighbor_col = 0;
 			else
 				neighbor_col = (uint8_t)c;
 
 			// count neighbor if live
-			cell_t neighbor = (*cells)[*width * neighbor_row + neighbor_col];
-			if (neighbor && (neighbor_row != *row || neighbor_col != *col))
+			cell_t neighbor = cells[width * neighbor_row + neighbor_col];
+			if (neighbor && (neighbor_row != row || neighbor_col != col))
 				num_live_neighbors++;
 		}
 	}
@@ -507,51 +507,51 @@ static uint8_t count_live_neighbors(
 }
 
 static cell_t compute_game_of_life(
-	const cell_t* const cell,
-	const uint8_t* const num_live_neighbors
+	const cell_t cell,
+	const uint8_t num_live_neighbors
 ) {
 	// Game of Life rules
-	if (*cell && *num_live_neighbors < 2)
+	if (cell && num_live_neighbors < 2)
 		return 0;
-	if (*cell && (*num_live_neighbors == 2 || *num_live_neighbors == 3))
+	if (cell && (num_live_neighbors == 2 || num_live_neighbors == 3))
 		return 1;
-	if (*cell && *num_live_neighbors > 3)
+	if (cell && num_live_neighbors > 3)
 		return 0;
-	if (!*cell && *num_live_neighbors == 3)
+	if (!cell && num_live_neighbors == 3)
 		return 1;
 	return 0;
 }
 
 static cell_t compute_cell(
-	cell_t** const cells,
-	const uint8_t* const row,
-	const uint8_t* const col,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const bool* const wrap
+	cell_t* const cells,
+	const uint8_t row,
+	const uint8_t col,
+	const uint8_t width,
+	const uint8_t height,
+	const bool wrap
 ) {
-	cell_t cell = (*cells)[*width * *row + *col];
+	cell_t cell = cells[width * row + col];
 	uint8_t num_live_neighbors = count_live_neighbors(cells, row, col, width, height, wrap);
-	return compute_game_of_life(&cell, &num_live_neighbors);
+	return compute_game_of_life(cell, num_live_neighbors);
 }
 
 static asciigol_result_t compute_cells(
-	cell_t** cells,
-	cell_t** new_cells,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const bool* const wrap
+	cell_t* cells,
+	cell_t* new_cells,
+	const uint8_t width,
+	const uint8_t height,
+	const bool wrap
 ) {
 	bool converged = true;
-	uint16_t size = *width * *height;
+	uint16_t size = width * height;
 	for (uint16_t i = 0; i < size; i++) {
-		uint8_t row = (uint8_t)(i / *width);
-		uint8_t col = (uint8_t)(i % *width);
-		cell_t cell = (*cells)[i];
-		cell_t new_cell = compute_cell(cells, &row, &col, width, height, wrap);
+		uint8_t row = (uint8_t)(i / width);
+		uint8_t col = (uint8_t)(i % width);
+		cell_t cell = cells[i];
+		cell_t new_cell = compute_cell(cells, row, col, width, height, wrap);
 		if (cell != new_cell)
 			converged = false;
-		(*new_cells)[i] = new_cell;
+		new_cells[i] = new_cell;
 	}
 	return converged ? ASCIIGOL_CONVERGED : ASCIIGOL_OK;
 }
@@ -563,22 +563,22 @@ static void swap_buffers(cell_t** buffer_a, cell_t** buffer_b) {
 }
 
 static void render_cells(
-	cell_t** const cells,
-	const uint8_t* const width,
-	const uint8_t* const height,
-	const char* const live_char,
-	const char* const dead_char,
-	const asciigol_bg_t* const background
+	cell_t* const cells,
+	const uint8_t width,
+	const uint8_t height,
+	const char live_char,
+	const char dead_char,
+	const asciigol_bg_t background
 ) {
-	uint16_t size = *width * *height;
+	uint16_t size = width * height;
 	for (uint16_t i = 0; i < size; i++) {
-		const char live = *live_char ? *live_char : DEFAULT_LIVE_CHAR;
-		const char dead = *dead_char ? *dead_char : DEFAULT_DEAD_CHAR;
+		const char live = live_char ? live_char : DEFAULT_LIVE_CHAR;
+		const char dead = dead_char ? dead_char : DEFAULT_DEAD_CHAR;
 		const bool are_chars_same = live == dead;
-		const bool is_live_cell = (bool)(*cells)[i];
+		const bool is_live_cell = (bool)cells[i];
 		const bool alternate_bg = are_chars_same && !is_live_cell;
 		const char character = is_live_cell ? live : dead;
-		switch (*background) {
+		switch (background) {
 			case ASCIIGOL_BG_LIGHT:
 				printf("%s", alternate_bg ? BG_BLACK_FG_WHITE : BG_WHITE_FG_BLACK);
 				break;
@@ -590,7 +590,7 @@ static void render_cells(
 				printf("%s", BG_DEFAULT_FG_DEFAULT);
 		}
 		putchar(character);
-		if (i % *width == *width - 1)
+		if (i % width == width - 1)
 			printf("%s\n", BG_DEFAULT_FG_DEFAULT);
 	}
 }

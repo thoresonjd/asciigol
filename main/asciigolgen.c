@@ -43,7 +43,7 @@ static bool parse_arg(asciigolgen_args_t* const args, char* arg);
  */
 static bool parse_args(
 	asciigolgen_args_t* const args,
-	const int* const argc,
+	const int argc,
 	char** const argv
 );
 
@@ -51,22 +51,22 @@ static bool parse_args(
  * @brief Print the result of the asciigolgen program as text.
  * @param[in] result The asciigolgen result.
  */
-static void print_asciigolgen_result(const asciigolgen_result_t* const result);
+static void print_asciigolgen_result(const asciigolgen_result_t result);
 
 /**
  * @brief Determine if the asciigolgen program ran successfully.
  * @param[in] result The asciigolgen result.
  * @return True if asciigolgen ran successfully, false otherwise.
  */
-static bool is_asciigolgen_success(const asciigolgen_result_t* const result);
+static bool is_asciigolgen_success(const asciigolgen_result_t result);
 
 int main(int argc, char** argv) {
 	asciigolgen_args_t args = { 0 };
-	if (!parse_args(&args, &argc, argv))
+	if (!parse_args(&args, argc, argv))
 		return EXIT_FAILURE;
 	asciigolgen_result_t result = asciigolgen(args);
-	print_asciigolgen_result(&result);
-	return is_asciigolgen_success(&result) ? EXIT_SUCCESS : EXIT_FAILURE;
+	print_asciigolgen_result(result);
+	return is_asciigolgen_success(result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static bool parse_arg(asciigolgen_args_t* const args, char* arg) {
@@ -87,14 +87,14 @@ static bool parse_arg(asciigolgen_args_t* const args, char* arg) {
 
 static bool parse_args(
 	asciigolgen_args_t* const args,
-	const int* const argc,
+	const int argc,
 	char** const argv
 ) {
-	if (*argc != 5) {
+	if (argc != 5) {
 		printf("Invalid number of arguments\n%s\n", USAGE);
 		return false;
 	}
-	for (int i = 1; i < *argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		char* const arg = argv[i];
 		if (!parse_arg(args, arg)) {
 			printf("Failed to parse: %s\n%s\n", arg, USAGE);
@@ -104,9 +104,9 @@ static bool parse_args(
 	return true;
 }
 
-static void print_asciigolgen_result(const asciigolgen_result_t* const result) {
+static void print_asciigolgen_result(const asciigolgen_result_t result) {
 	printf("Result: ");
-	switch (*result) {
+	switch (result) {
 		case ASCIIGOLGEN_OK:
 			printf("ASCIIGOLGEN_OK (%d)\n", ASCIIGOLGEN_FAIL);
 			break;
@@ -124,7 +124,7 @@ static void print_asciigolgen_result(const asciigolgen_result_t* const result) {
 	}
 }
 
-static bool is_asciigolgen_success(const asciigolgen_result_t* const result) {
-	return *result == ASCIIGOLGEN_OK || *result == ASCIIGOLGEN_DONE;
+static bool is_asciigolgen_success(const asciigolgen_result_t result) {
+	return result == ASCIIGOLGEN_OK || result == ASCIIGOLGEN_DONE;
 }
 

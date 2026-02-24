@@ -46,7 +46,7 @@ static bool parse_arg(asciigol_args_t* const args, char* arg);
  */
 static bool parse_args(
 	asciigol_args_t* const args,
-	const int* const argc,
+	const int argc,
 	char** const argv
 );
 
@@ -54,22 +54,22 @@ static bool parse_args(
  * @brief Print the result of the asciigol program as text.
  * @param[in] result The asciigol result.
  */
-static void print_asciigol_result(const asciigol_result_t* const result);
+static void print_asciigol_result(const asciigol_result_t result);
 
 /**
  * @brief Determine if the asciigol program ran successfully.
  * @param[in] result The asciigol result.
  * @return True if asciigol ran successfully, false otherwise.
  */
-static bool is_asciigol_success(const asciigol_result_t* const result);
+static bool is_asciigol_success(const asciigol_result_t result);
 
 int main(int argc, char** argv) {
 	asciigol_args_t args = { 0 };
-	if (!parse_args(&args, &argc, argv))
+	if (!parse_args(&args, argc, argv))
 		return EXIT_FAILURE;
 	asciigol_result_t result = asciigol(args);
-	print_asciigol_result(&result);
-	return is_asciigol_success(&result) ? EXIT_SUCCESS : EXIT_FAILURE;
+	print_asciigol_result(result);
+	return is_asciigol_success(result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static bool parse_arg(asciigol_args_t* const args, char* arg) {
@@ -107,10 +107,10 @@ static bool parse_arg(asciigol_args_t* const args, char* arg) {
 
 static bool parse_args(
 	asciigol_args_t* const args,
-	const int* const argc,
+	const int argc,
 	char** const argv
 ) {
-	for (int i = 1; i < *argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		char* const arg = argv[i];
 		if (!parse_arg(args, arg)) {
 			printf("Failed to parse: %s\n%s\n", arg, USAGE);
@@ -120,9 +120,9 @@ static bool parse_args(
 	return true;
 }
 
-static void print_asciigol_result(const asciigol_result_t* const result) {
+static void print_asciigol_result(const asciigol_result_t result) {
 	printf("Result: ");
-	switch (*result) {
+	switch (result) {
 		case ASCIIGOL_OK:
 			printf("ASCIIGOL_OK (%d)\n", ASCIIGOL_OK);
 			break;
@@ -146,7 +146,7 @@ static void print_asciigol_result(const asciigol_result_t* const result) {
 	}
 }
 
-static bool is_asciigol_success(const asciigol_result_t* const result) {
-	return *result == ASCIIGOL_OK || *result == ASCIIGOL_CONVERGED;
+static bool is_asciigol_success(const asciigol_result_t result) {
+	return result == ASCIIGOL_OK || result == ASCIIGOL_CONVERGED;
 }
 
