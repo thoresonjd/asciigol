@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 /**
  * @brief The data type representing a Game of Life cell.
@@ -33,9 +32,14 @@ static const uint8_t DEFAULT_HEIGHT = 40;
 static const uint16_t DEFAULT_DELAY_MILLIS = 50;
 
 /**
- * @brief The number of microseconds per millisecond.
+ * @brief The number of milliseconds per second
  */
-static const uint16_t MICROS_PER_MILLI = 1000;
+static const uint16_t MILLIS_PER_SECOND = 1000;
+
+/**
+ * @brief The number of nanoseconds per millisecond.
+ */
+static const uint32_t NANOS_PER_MILLI = 1000000;
 
 /**
  * @brief The default character representing a live cell.
@@ -271,7 +275,11 @@ static void reset_cursor() {
 }
 
 static void wait(const uint16_t* const delay) {
-	usleep((*delay ? *delay : DEFAULT_DELAY_MILLIS) * MICROS_PER_MILLI);
+	const uint8_t seconds =  *delay ? *delay / MILLIS_PER_SECOND : 0;
+	const uint32_t nanoseconds =  NANOS_PER_MILLI *
+		(*delay ? *delay % MILLIS_PER_SECOND : DEFAULT_DELAY_MILLIS);
+	struct timespec req =  { seconds, nanoseconds };
+	nanosleep(&req, NULL);
 }
 
 static void free_buffer(cell_t** buffer) {
