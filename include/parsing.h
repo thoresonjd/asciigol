@@ -14,8 +14,8 @@
 
 /**
  * @brief Move a string pointer forward passed a specified prefix.
- * @param string[in,out] The string in which the prefix is skipped.
- * @param prefix[in] The prefix to skip.
+ * @param[in,out] string The string in which the prefix is skipped.
+ * @param[in] prefix The prefix to skip.
  * @return True if parsing succeeded, false otherwise.
  */
 bool skip_prefix(char** string, const char* prefix);
